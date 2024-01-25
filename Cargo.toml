@@ -1,0 +1,22 @@
+[package]
+name = "audio_server"
+version = "0.0.1"
+edition = "2021"
+
+[lib]
+
+
+[dependencies]
+#raalog = { path="../../develop/raalog/" }
+#raalog = { git = "https://github.com/AlexanderARodin/raalog.git", branch="dev" }
+raalog = { git = "https://github.com/AlexanderARodin/raalog.git", tag="v0.2.0" }
+
+tinyaudio = "0.1.1"
+rustysynth = "1.2.0"
+
+
+
+
+#[target.'cfg(target_arch = "wasm32")'.dependencies]
+#wasm-bindgen = "0.2.90"
+

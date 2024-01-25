@@ -1,0 +1,32 @@
+name: validation
+on:
+  push:
+  
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  make-pages:
+    runs-on: ubuntu-latest
+    steps:
+    - name: clone
+      uses: actions/checkout@v4
+    - uses: actions-rs/toolchain@v1 # get rust toolchain for wasm
+      with:
+        profile: minimal
+        toolchain: stable
+        target: wasm32-unknown-unknown
+        override: true
+    - name: Rust Cache # cache the rust build artefacts
+      uses: Swatinem/rust-cache@v1
+
+    - name: Tests
+      run : make test
+    - name: Build native
+      run : make release.native
+    - name: Build WASM
+      run : make release.wasm
+
+# EOF
