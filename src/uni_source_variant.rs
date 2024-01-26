@@ -15,11 +15,6 @@ use crate::midi_sequencer::MidiSequencer;
 
 
 
-static SF_PIANO:   &'static [u8] = include_bytes!("../SoundFonts/Piano Grand.SF2");
-static SF_STRINGS: &'static [u8] = include_bytes!("../SoundFonts/String Marcato.SF2");
-//static SF_ORGAN:   &'static [u8] = include_bytes!("../../SoundFonts/Organ Chorus.SF2");
-
-
 //  //  //  //  //  //  //  //
 //      CORE
 //  //  //  //  //  //  //  //
@@ -34,7 +29,7 @@ pub(crate) enum UniSourceVariant {
 use UniSourceVariant::*;
 
 impl UniSourceVariant {
-    pub(crate) fn new<'a>( config: &str, sample_rate: &usize, time_increment: f32 ) -> Result<Self, Box<&'a str>> {
+    pub(crate) fn new<'a>( config: &str, sample_rate: &usize, time_increment: f32, data: Option<&[u8]> ) -> Result<Self, Box<&'a str>> {
         match config {
             "None" => {
                 return Ok( Silence );
@@ -44,29 +39,16 @@ impl UniSourceVariant {
                 let arcmut_wrapper = Arc::new(Mutex::new(synth));
                 return Ok( Simple(arcmut_wrapper) );
             },
-            "RustySynt - Strings" => {
-                let mut sf_source = SF_STRINGS;
-                if let Ok(ryssyn) = RustySynthWrapper::new( &sample_rate, &mut sf_source ) {
-                    let arcmut_wrapper = Arc::new(Mutex::new( ryssyn ));
-                    return Ok( Rusty(arcmut_wrapper) );
-                }
-                return Err( Box::new("invoke_set_uni_source: err 1") );
+            "RustySynt" => {
+                let arcmut_wrapper = Self::createRustySynth(&sample_rate, data )?;
+                return Ok(Rusty( arcmut_wrapper ));
             },
-            "RustySynt - Piano" => {
-                let mut sf_source = SF_PIANO;
-                if let Ok(ryssyn) = RustySynthWrapper::new( &sample_rate, &mut sf_source ) {
-                    let arcmut_wrapper = Arc::new(Mutex::new( ryssyn ));
-                    return Ok( Rusty(arcmut_wrapper) );
-                }
-                return Err( Box::new("invoke_set_uni_source: err 2") );
-            },
-            "Sequencer:RustySynt - Strings" => {
+            "Sequencer:RustySynt" => {
                 let mut sequencer = MidiSequencer::new(time_increment);
-                let mut sf_source = SF_STRINGS;
-                if let Ok(ryssyn) = RustySynthWrapper::new( &sample_rate, &mut sf_source ) {
-                    let arcmut_wrapper = Arc::new(Mutex::new( ryssyn ));
-                    sequencer.install_synth( Some(arcmut_wrapper.clone()) );
-                }
+
+                let arcmut_wrapper = Self::createRustySynth(&sample_rate, data )?;
+                sequencer.install_synth( Some(arcmut_wrapper.clone()) );
+
                 let sequencer_wrapper = Arc::new(Mutex::new( sequencer ));
                 return Ok( Sequencer(sequencer_wrapper) );
             },
@@ -115,3 +97,44 @@ impl UniSourceVariant {
     }
 }
 
+
+//  //  //  //  //  //  //  //
+//      internal
+//  //  //  //  //  //  //  //
+impl UniSourceVariant {
+    fn createRustySynth<'a>(sample_rate: &usize, data: Option<&[u8]> ) -> Result< Arc<Mutex<RustySynthWrapper>>, Box<&'a str> > {
+        if let Some(mut sf_source) = data {
+            match RustySynthWrapper::new( &sample_rate, &mut sf_source ) {
+                Ok(ryssyn) => {
+                    let arcmut_wrapper = Arc::new(Mutex::new( ryssyn ));
+                    return Ok( arcmut_wrapper );
+                },
+                Err(e) => {
+                    log::error(&e.to_string());
+                    return Err(
+                            Box::new( "invoke_set_uni_source: error creating of RustySynthWrapper" )
+                        );
+                },
+            }
+        }else{
+            return Err( Box::new("invoke_set_uni_source: there is no SoundFont for init") );
+        }
+    }
+}
+
+
+
+//  //  //  //  //  //  //  //
+//      TESTs
+//  //  //  //  //  //  //  //
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rusty_error_on_empty_data() {
+        if let Ok(_ryssy) = UniSourceVariant::createRustySynth(&44100, None ) {
+            assert!(false, "shound be error");
+        }
+    }
+}

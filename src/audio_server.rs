@@ -9,6 +9,11 @@ use crate::uni_source_variant::UniSourceVariant::*;
 use crate::midi_lib::{MidiMessage,MidiSequence};
 
 
+//static SF_PIANO:   &'static [u8] = include_bytes!("../SoundFonts/Piano Grand.SF2");
+//static SF_STRINGS: &'static [u8] = include_bytes!("../SoundFonts/String Marcato.SF2");
+//static SF_ORGAN:   &'static [u8] = include_bytes!("../../SoundFonts/Organ Chorus.SF2");
+
+
 //  //  //  //  //  //  //  //
 //      CORE
 //  //  //  //  //  //  //  //
@@ -39,7 +44,7 @@ impl Drop for AudioServer {
 //      main INTERFACE
 //  //  //  //  //  //  //  //
 impl AudioServer {
-    pub fn config( &mut self, setup: &str) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn config( &mut self, setup: &str, data: Option<&[u8]>  ) -> Result<(), Box<dyn std::error::Error>> {
         #[cfg(test)]
         if setup == "error" {
             return Err(Box::from("error on error"));
@@ -48,7 +53,7 @@ impl AudioServer {
             return Ok(());
         }
 
-        self.invoke_set_uni_source( setup );
+        self.invoke_set_uni_source( setup, data );
         Ok(())
     }
     
@@ -101,11 +106,11 @@ impl AudioServer {
 //      invoking
 //  //  //  //  //  //  //  //
 impl AudioServer {
-    fn invoke_set_uni_source(&mut self, config: &str) {
+    fn invoke_set_uni_source(&mut self, config: &str, data: Option<&[u8]> ) {
         log::info( &format!("--> <{config}>") );
         let sample_rate = self.audio_core.get_sample_rate();
         let time_increment = self.audio_core.get_time_increment();
-        self.uni_source = match UniSourceVariant::new(config, &sample_rate, time_increment) {
+        self.uni_source = match UniSourceVariant::new( config, &sample_rate, time_increment, data ) {
             Ok(variant) => variant,
             Err(e) => {
                 log::error(&e);
@@ -220,7 +225,7 @@ mod tests {
     #[test]
     fn config_ok() {
         let mut audio = AudioServer::new();
-        let res = audio.config("");
+        let res = audio.config("", None );
         if let Ok(()) = res {
         }else{
             assert!( false, "CONFIG shoud be Ok(())");
@@ -229,7 +234,7 @@ mod tests {
     #[test]
     fn config_error() {
         let mut audio = AudioServer::new();
-        let res = audio.config("error");
+        let res = audio.config("error", None );
         if let Err(e) = res {
             let err_msg = &e.to_string();
             log::info(err_msg);
