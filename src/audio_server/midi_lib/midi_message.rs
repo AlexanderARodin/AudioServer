@@ -1,4 +1,3 @@
-
 pub struct MidiGeneral {
     pub channel: i32,
     pub command: i32,

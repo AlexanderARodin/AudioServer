@@ -1,0 +1,75 @@
+
+
+
+
+
+//  //  //  //  //  //  //  //
+//      CORE
+//  //  //  //  //  //  //  //
+fn midikey2namekey( midi_key: u8 ) -> String {
+    let main_note_index = midi_key % 12;
+    let mut res = String::from("");
+    match main_note_index {
+        0 => {
+            res += "C";
+        },
+        1 => {
+            res += "C#";
+        },
+        2 => {
+            res += "D";
+        },
+        3 => {
+            res += "D#";
+        },
+        4 => {
+            res += "E";
+        },
+        5 => {
+            res += "F";
+        },
+        6 => {
+            res += "F#";
+        },
+        7 => {
+            res += "G";
+        },
+        8 => {
+            res += "G#";
+        },
+        9 => {
+            res += "A";
+        },
+        10=> {
+            res += "A#";
+        },
+        11=> {
+            res += "H";
+        },
+        _ => {
+        },
+    }
+    let octaveIndex = i16::from((midi_key - main_note_index) / 12) - 1;
+    format!("{}{}",res,octaveIndex)
+}
+
+
+
+
+//  //  //  //  //  //  //  //
+//      TESTS
+//  //  //  //  //  //  //  //
+
+#[cfg(test)]
+mod symbol2midi{
+    use super::*;
+
+    #[test]
+    fn conver() {
+        for i in 0..=12 {
+            let res = midikey2namekey(i);
+            println!("{} -> {}",i,res);
+        }
+        assert!( true, "wrong current_index");
+    }
+}

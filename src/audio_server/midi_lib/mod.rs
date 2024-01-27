@@ -6,3 +6,5 @@ pub use midi_receiver::MidiReceiver as MidiReceiver;
 
 pub mod midi_sequence;
 pub use midi_sequence::MidiSequence;
+
+//pub mod symbol2midi;

@@ -1,11 +1,11 @@
-    use std::sync::{Arc,Mutex};
+use std::sync::{Arc,Mutex};
+use raalog::log;
 
-    use raalog::log;
 
-    use crate::audio_core::AudioRender;
+    use super::audio_core::AudioRender;
 
-    use crate::midi_lib::{MidiReceiver,MidiSequence,MidiMessage};
-pub use crate::synths::MidiSynth as MidiSynth;
+    use super::midi_lib::{MidiReceiver,MidiSequence,MidiMessage};
+pub use super::synths::MidiSynth as MidiSynth;
 
 
 //  //  //  //  //  //  //  //

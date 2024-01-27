@@ -99,7 +99,7 @@ impl AudioCore {
         let render_holder_clone = self.render_holder.clone();
         let block_chunk = 2*self.params.block_size;
         // try to start device loop
-        let device = invoke_runOutputDevice( params,
+        let device = invoke_run_output_device( params,
                                              render_holder_clone,
                                              block_chunk,
                                              self.params.block_size );
@@ -119,7 +119,7 @@ impl AudioCore {
 //  //  //  //  //  //  //  //
 //      PRIVATE lvl1
 //  //  //  //  //  //  //  //
-fn invoke_runOutputDevice( params: OutputDeviceParameters,
+fn invoke_run_output_device( params: OutputDeviceParameters,
                            render_holder_clone: Arc<Mutex<RenderHolder>>,
                            block_chunk: usize,
                            block_size: usize ) -> Result< Box<dyn BaseAudioOutputDevice>, Box<dyn Error> > {

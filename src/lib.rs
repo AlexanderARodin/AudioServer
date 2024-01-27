@@ -1,13 +1,5 @@
-#![allow(non_snake_case)]
-
     mod audio_server;
 pub use audio_server::AudioServer as AudioServer;
-
-    mod audio_core;
-    mod uni_source_variant;
-    mod synths;
-    mod midi_lib;
-    mod midi_sequencer;
 
 
 

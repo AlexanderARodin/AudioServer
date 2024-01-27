@@ -80,8 +80,8 @@ impl MidiReceiver for SimpleSynth {
 impl SimpleSynth {
     pub fn note_on(&mut self, _channel: i32, key: i32, velocity: i32) {
         log::info("SimpleSynth: note ON");
-        self.amplitude = 0.999*SimpleSynth::amplitudeFrom( velocity );
-        self.frequency = SimpleSynth::frequencyFrom( key );
+        self.amplitude = 0.999*SimpleSynth::amplitude_from( velocity );
+        self.frequency = SimpleSynth::frequency_from( key );
     }
     pub fn note_off(&mut self, _channel: i32, _key: i32) {
         log::info("SimpleSynth: note OFF");
@@ -89,10 +89,10 @@ impl SimpleSynth {
         self.counter = 0_f32;
     }
     
-    fn frequencyFrom( key: i32 ) -> f32 {
+    fn frequency_from( key: i32 ) -> f32 {
         440. * 2_f32.powf( ((key as f32) - 69.)/12. )
     }
-    fn amplitudeFrom( velocity: i32 ) -> f32 {
+    fn amplitude_from( velocity: i32 ) -> f32 {
         let norm = (velocity as f32) / 127_f32;
         (VELO_PAR).powf( norm - 1. ) * norm
     }
@@ -117,27 +117,27 @@ mod test_velocity {
     #[test]
     fn velocity_127() {
         let velocity = 127;
-        let ampl = super::SimpleSynth::amplitudeFrom( velocity );
+        let ampl = super::SimpleSynth::amplitude_from( velocity );
         println!("velocity: {velocity} -> {ampl}");
         assert!(ampl == 1.);
     }
     #[test]
     fn velocity_0() {
         let velocity = 0;
-        let ampl = super::SimpleSynth::amplitudeFrom( velocity );
+        let ampl = super::SimpleSynth::amplitude_from( velocity );
         println!("velocity: {velocity} -> {ampl}");
         assert!(ampl == 0.);
     }
     #[test]
     fn velocity_64() {
         let velocity = 64;
-        let ampl = super::SimpleSynth::amplitudeFrom( velocity );
+        let ampl = super::SimpleSynth::amplitude_from( velocity );
         println!("velocity: {velocity} -> {ampl}");
     }
     #[test]
     fn velocity_1() {
         let velocity = 1;
-        let ampl = super::SimpleSynth::amplitudeFrom( velocity );
+        let ampl = super::SimpleSynth::amplitude_from( velocity );
         println!("velocity: {velocity} -> {ampl}");
     }
 }
