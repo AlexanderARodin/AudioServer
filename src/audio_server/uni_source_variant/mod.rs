@@ -34,7 +34,7 @@ impl UniSourceVariant {
             if let Value::String(name) = name_val {
                 match name.as_str() {
                     "Sequencer" => Self::new_sequencer( au_tbl, sample_rate, time_increment, data ),
-                    _ => Self::create_synth(&name, sample_rate, time_increment, data),
+                    _ => Self::create_synth(&name, sample_rate, data),
                 }
             }else{
                 return Err(Box::from("Name have to be text name of Synth or Sequencer"));
