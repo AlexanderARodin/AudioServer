@@ -10,8 +10,6 @@ use raalog::log;
     use uni_source_variant::{ UniSourceVariant, UniSourceVariant::* };
 
     mod midi_lib;
-    //use midi_lib::{ MidiMessage};
-    use midi_lib::{ MidiSequence };
 
     mod synths;
     mod midi_sequencer;
@@ -75,7 +73,7 @@ impl AudioServer {
                 return self.audio_core.start();
             },
             _ => {
-                return self.invoke_exec( commands );
+                return self.invoke_exec_parsing( commands );
             },
         }
     }
@@ -83,94 +81,22 @@ impl AudioServer {
     //  //  //  //  //  //  //
     pub fn state(&self) -> &'static str {
         if self.audio_core.is_active() {
-            match &self.uni_source {
-                Sequencer(sequencer) => {
-                    let locked_sequencer = sequencer.lock()
-                        .expect("FATAL locking Sequencer");
-                    if locked_sequencer.get_state() {
-                        "running"
-                    }else{
-                        "REALTIME"
-                    }
-                },
-                _ => {
+            if let Sequencer(sequencer) = &self.uni_source {
+                let locked_sequencer = sequencer.lock()
+                    .expect("FATAL locking Sequencer");
+                if locked_sequencer.is_sequence_finished() {
                     "running"
+                }else{
+                    "REALTIME"
                 }
-        }
+            }else{
+                "running"
+            }
         }else{
             "inactive"
         }
     }
 }
 
-
-//  //  //  //  //  //  //  //
-//      internal
-//  //  //  //  //  //  //  //
-impl AudioServer {
-    fn install_source_to_audio(&mut self) {
-        match &self.uni_source {
-            Silence => {
-                self.audio_core.install_render(None);
-            },
-            Audio(wrapped_audio_render) => {
-                self.audio_core.install_render(Some( wrapped_audio_render.clone() ));
-            },
-            Simple(simsyn) => {
-                self.audio_core.install_render(Some( simsyn.clone() ));
-            },
-            Rusty(ryssyn) => {
-                self.audio_core.install_render(Some( ryssyn.clone() ));
-            },
-            Sequencer(sequencer) => {
-                self.audio_core.install_render(Some( sequencer.clone() ));
-            },
-        }
-    }
-    fn set_sequence(&mut self, seq: MidiSequence, is_auto_repeat: bool ) {
-        match &self.uni_source {
-            Sequencer(sequencer) => {
-                let mut locked_sequencer = sequencer.lock()
-                    .expect("FATAL of locking Sequencer");
-                locked_sequencer.set_midi_sequence(seq, is_auto_repeat );
-            },
-            _ => {
-                log::error("set_sequence: NOT a Sequencer.Ignoring")
-            },
-            
-        }
-    }
-}
-
-
-//  //  //  //  //  //  //  //
-//      TESTs
-//  //  //  //  //  //  //  //
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn exec_ok() {
-        let mut audio = AudioServer::new();
-        let res = audio.exec("");
-        if let Ok(()) = res {
-        }else{
-            assert!( false, "EXEC shoud be Ok(())");
-        }
-    }
-    #[test]
-    fn exec_error() {
-        let mut audio = AudioServer::new();
-        let res = audio.exec("error");
-        if let Err(e) = res {
-            let err_msg = &e.to_string();
-            log::info(err_msg);
-            assert!( err_msg == "error on error", "EXEC.Err shoud be <error on error>");
-        }else{
-            assert!( false, "EXEC shoud be Err");
-        }
-    }
-}
 
 

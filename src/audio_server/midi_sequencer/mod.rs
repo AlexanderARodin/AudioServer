@@ -58,7 +58,7 @@ impl MidiSequencer {
                                                 midi.data2 );
         }
     }
-    pub fn get_state(&self) -> bool {
+    pub fn is_sequence_finished(&self) -> bool {
         self.sequence.is_finished()
     }
 }

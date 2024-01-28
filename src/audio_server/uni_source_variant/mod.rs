@@ -16,6 +16,8 @@ use raalog::log;
 //  //  //  //  //  //  //  //
 //      CORE
 //  //  //  //  //  //  //  //
+mod impl_new;
+
 pub(crate) enum UniSourceVariant {
     Silence,
     #[allow(dead_code)]
@@ -27,43 +29,30 @@ pub(crate) enum UniSourceVariant {
 use UniSourceVariant::*;
 
 impl UniSourceVariant {
-    pub(crate) fn new( tbl: &Table, sample_rate: &usize, time_increment: f32, data: Option<&[u8]> ) -> Result<Self, Box<dyn Error>> {
-        let main_synth_name;
-        if let Some(main_val) = tbl.get("Main") {
-            if let Value::String(main_name) = main_val {
-                main_synth_name = main_name.as_str();
+    pub(crate) fn new( au_tbl: &Table, sample_rate: &usize, time_increment: f32, data: Option<&[u8]> ) -> Result<Self, Box<dyn Error>> {
+        if let Some(name_val) = au_tbl.get("Name") {
+            if let Value::String(name) = name_val {
+                match name.as_str() {
+                    "Sequencer" => Self::new_sequencer( au_tbl, sample_rate, time_increment, data ),
+                    _ => Self::create_synth(&name, sample_rate, time_increment, data),
+                }
             }else{
-                return Err(Box::from("Main have to be name of Synth"));
+                return Err(Box::from("Name have to be text name of Synth or Sequencer"));
             }
         }else{
-            return Err(Box::from("no Main in AudioSource"));
+            return Err(Box::from("no Name in AudioSource"));
         }
+    }
 
-        match main_synth_name {
-            "None" => {
-                return Ok( Silence );
-            },
-            "Simple" => {
-                let synth = SimpleSynth::new(sample_rate);
-                let arcmut_wrapper = Arc::new(Mutex::new(synth));
-                return Ok( Simple(arcmut_wrapper) );
-            },
-            "RustySynth" => {
-                let arcmut_wrapper = Self::create_rustysynth(&sample_rate, data )?;
-                return Ok(Rusty( arcmut_wrapper ));
-            },
-            "Sequencer" => {
-                let mut sequencer = MidiSequencer::new(time_increment);
-
-                let arcmut_wrapper = Self::create_rustysynth(&sample_rate, data )?;
-                sequencer.install_synth( Some(arcmut_wrapper.clone()) );
-
-                let sequencer_wrapper = Arc::new(Mutex::new( sequencer ));
-                return Ok( Sequencer(sequencer_wrapper) );
-            },
-            _ => {
-                return Err( Box::from("invoke_set_uni_source: unknow config") );
-            },
+    fn new_sequencer( au_tbl: &Table, sample_rate: &usize, time_increment: f32, data: Option<&[u8]> ) -> Result<Self, Box<dyn Error>> {
+        if let Some(au_seq_val) = au_tbl.get("Sequencer") {
+            if let Value::Table(au_seq_tbl) = au_seq_val {
+                return Self::create_sequencer( au_seq_tbl, sample_rate, time_increment, data );
+            }else{
+                return Err(Box::from("invalid Sequencer section"));
+            }
+        }else{
+            return Err(Box::from("no Sequencer sub-section"));
         }
     }
 }
