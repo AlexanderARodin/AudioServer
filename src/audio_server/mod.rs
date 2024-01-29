@@ -57,13 +57,6 @@ impl AudioServer {
 
     //  //  //  //  //  //  //
     pub fn exec( &mut self, commands: &str) -> Result<(), Box<dyn Error>> {
-        #[cfg(test)]
-        if commands == "error" {
-            return Err(Box::from("error on error"));
-        }
-        if commands == "" {
-            return Ok(());
-        }
         match commands {
             "stop" => {
                 self.audio_core.stop();

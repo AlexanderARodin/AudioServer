@@ -58,12 +58,3 @@ impl UniSourceVariant {
         }
     }
 }
-/*            "Sequencer:RustySynt" => {
-                let mut sequencer = MidiSequencer::new(time_increment);
-
-                let arcmut_wrapper = Self::createRustySynth(&sample_rate, data )?;
-                sequencer.install_synth( Some(arcmut_wrapper.clone()) );
-
-                let sequencer_wrapper = Arc::new(Mutex::new( sequencer ));
-                return Ok( Sequencer(sequencer_wrapper) );
-  */        

@@ -12,28 +12,16 @@ use raalog::log;
 use super::AudioServer;
 
 impl AudioServer {
-    pub(crate) fn invoke_exec_parsing(&mut self, commands: &str) -> Result<(), Box<dyn std::error::Error>> {
+    pub(crate) fn invoke_exec_parsing(&mut self, commands: &str) -> Result<(), Box<dyn Error>> {
+        match interpret_as_midi(commands) {
+            Ok(Some(midi)) => {
+                self.uni_source.send_to_synth(&midi);
+                return Ok(());
+            },
+            Err(e) => return Err(e),
+            Ok(None) => {},
+        }
         match commands {
-            "note ON" => {
-                let midi = MidiMessage::NoteOn(1,60,127);
-                self.uni_source.send_to_synth( &midi );
-                Ok(())
-            },
-            "note ON2" => {
-                let midi = MidiMessage::NoteOn(1,67,64);
-                self.uni_source.send_to_synth( &midi );
-                Ok(())
-            },
-            "note ON3" => {
-                let midi = MidiMessage::NoteOn(1,72,1);
-                self.uni_source.send_to_synth( &midi );
-                Ok(())
-            },
-            "note OFF" => {
-                let midi = MidiMessage::NoteOff(1,60,100);
-                self.uni_source.send_to_synth( &midi );
-                Ok(())
-            },
             "seq 1" => {
                 let mut seq = MidiSequence::new();
                 seq.push( 0.0, &MidiMessage::NoteOn( 1,90,80) );
@@ -86,37 +74,226 @@ impl AudioServer {
             
         }
     }
+
 }
 
+//  //  //  //  //  //  //  //
+//      UTILs
+//  //  //  //  //  //  //  //
+fn interpret_as_midi( cmd: &str ) -> Result< Option<MidiMessage>, Box<dyn Error> > {
+    if cmd.starts_with("on") {
+        let from_index = 2;
+        let (key, velocity) = extract_onoff_params(cmd.get(from_index..))?;
+        return Ok(Some(MidiMessage::NoteOn(1,key,velocity)));
+    }
+    if cmd.starts_with("off") {
+        let from_index = 3;
+        let (key, velocity) = extract_onoff_params(cmd.get(from_index..))?;
+        return Ok(Some(MidiMessage::NoteOff(1,key,velocity)));
+    }
+    Ok(None)
+}
+fn extract_onoff_params( opt_params_str: Option<&str> ) -> Result< (i32, i32) , Box<dyn Error> > {
+    if let Some(params_str) = opt_params_str {
+        let delimeter_index = match params_str.rfind('#') {
+            Some(index) => index,
+            None => params_str.len(),
+        };
+        let key = extract_key( params_str.get(0..delimeter_index) )?;
+        let vel = extract_velociy_or_return_64( params_str.get( (1+delimeter_index).. ))?;
+        return Ok( (key,vel) );
+    }else{
+        return Err(Box::from("On//Off has to have valid params"))
+    }
+}
+fn extract_key( opt_key_str: Option<&str> ) -> Result< i32, Box<dyn Error> > {
+    if let Some(key_str) = opt_key_str {
+        return Ok( key_str.parse::<i32>()? );
+    }else{
+        return Err(Box::from("key has to be presented"));
+    }
+}
+fn extract_velociy_or_return_64( opt_key_str: Option<&str> ) -> Result< i32, Box<dyn Error> > {
+    if let Some(key_str) = opt_key_str {
+        return Ok( key_str.parse::<i32>()? );
+    }else{
+        return Ok(64);
+    }
+}
 
 
 //  //  //  //  //  //  //  //
 //      TESTs
 //  //  //  //  //  //  //  //
 #[cfg(test)]
-mod tests {
+mod interpret_notes {
     use super::*;
 
     #[test]
-    fn exec_ok() {
-        let mut audio = AudioServer::new();
-        let res = audio.exec("");
-        if let Ok(()) = res {
-        }else{
-            assert!( false, "EXEC shoud be Ok(())");
+    fn on5() {
+        let mist;
+        match interpret_as_midi( "on5" ) {
+            Ok(Some(midi)) => {
+                let gmidi = midi.to_midi_general();
+                if gmidi.channel != 1 {
+                    mist = "midi channel has to be 1";
+                }else if gmidi.command != 0x90  {
+                    mist = "midi command has to be NoteOn";
+                }else if gmidi.data1 != 5 {
+                    mist = "midi data1 has to be key5";
+                }else if gmidi.data2 != 64 {
+                    mist = "midi data2 has to be velo64";
+                }else{
+                    mist = "";
+                }
+            },
+            Ok(None) => {
+                mist = "has NOT be None";
+            },
+            Err(e) => {
+                mist = "has NOT to be Error";
+                log::error(&e.to_string());
+            },
         }
+        assert!( mist == "", ">> {mist} <<");
     }
     #[test]
-    fn exec_error() {
-        let mut audio = AudioServer::new();
-        let res = audio.exec("error");
-        if let Err(e) = res {
-            let err_msg = &e.to_string();
-            log::info(err_msg);
-            assert!( err_msg == "error on error", "EXEC.Err shoud be <error on error>");
-        }else{
-            assert!( false, "EXEC shoud be Err");
+    fn off_93_12() {
+        let mist;
+        match interpret_as_midi( "off93#12" ) {
+            Ok(Some(midi)) => {
+                let gmidi = midi.to_midi_general();
+                if gmidi.channel != 1 {
+                    mist = "midi channel has to be 1";
+                }else if gmidi.command != 0x80  {
+                    mist = "midi command has to be NoteOff";
+                }else if gmidi.data1 != 93 {
+                    mist = "midi data1 has to be key93";
+                }else if gmidi.data2 != 12 {
+                    mist = "midi data2 has to be velo12";
+                }else{
+                    mist = "";
+                }
+            },
+            Ok(None) => {
+                mist = "has NOT be None";
+            },
+            Err(e) => {
+                mist = "has NOT to be Error";
+                log::error(&e.to_string());
+            },
         }
+        assert!( mist == "", ">> {mist} <<");
+    }
+    #[test]
+    fn off_32() {
+        let mist;
+        match interpret_as_midi( "off32" ) {
+            Ok(Some(midi)) => {
+                let gmidi = midi.to_midi_general();
+                if gmidi.channel != 1 {
+                    mist = "midi channel has to be 1";
+                }else if gmidi.command != 0x80  {
+                    mist = "midi command has to be NoteOff";
+                }else if gmidi.data1 != 32 {
+                    mist = "midi data1 has to be key32";
+                }else if gmidi.data2 != 64 {
+                    mist = "midi data2 has to be velo64";
+                }else{
+                    mist = "";
+                }
+            },
+            Ok(None) => {
+                mist = "has NOT be None";
+            },
+            Err(e) => {
+                mist = "has NOT to be Error";
+                log::error(&e.to_string());
+            },
+        }
+        assert!( mist == "", ">> {mist} <<");
+    }
+    #[test]
+    fn on66_77() {
+        let mist;
+        match interpret_as_midi( "on66#77" ) {
+            Ok(Some(midi)) => {
+                let gmidi = midi.to_midi_general();
+                if gmidi.channel != 1 {
+                    mist = "midi channel has to be 1";
+                }else if gmidi.command != 0x90  {
+                    mist = "midi command has to be NoteOn";
+                }else if gmidi.data1 != 66 {
+                    mist = "midi data1 has to be key66";
+                }else if gmidi.data2 != 77 {
+                    mist = "midi data2 has to be velo77";
+                }else{
+                    mist = "";
+                }
+            },
+            Ok(None) => {
+                mist = "has NOT be None";
+            },
+            Err(e) => {
+                mist = "has NOT to be Error";
+                log::error(&e.to_string());
+            },
+        }
+        assert!( mist == "", ">> {mist} <<");
+    }
+    #[test]
+    fn on_invalid() {
+        let mist;
+        if let Err(e) = interpret_as_midi( "on_" ) {
+            mist = "";
+            log::error(&e.to_string());
+        }else{
+            mist = "ON with invalid params has to return Error";
+        }
+        assert!( mist == "", ">> {mist} <<");
+    }
+    #[test]
+    fn on_() {
+        let mist;
+        if let Err(e) = interpret_as_midi( "on#" ) {
+            mist = "";
+            log::error(&e.to_string());
+        }else{
+            mist = "ON with invalid params has to return Error";
+        }
+        assert!( mist == "", ">> {mist} <<");
+    }
+    #[test]
+    fn empty_on() {
+        let mist;
+        if let Err(e) = interpret_as_midi( "on" ) {
+            mist = "";
+            log::error(&e.to_string());
+        }else{
+            mist = "ON without params has to return Error";
+        }
+        assert!( mist == "", ">> {mist} <<");
+    }
+    #[test]
+    fn empty_off() {
+        let mist;
+        if let Err(e) = interpret_as_midi( "off" ) {
+            mist = "";
+            log::error(&e.to_string());
+        }else{
+            mist = "OFF without params has to return Error";
+        }
+        assert!( mist == "", ">> {mist} <<");
+    }
+    #[test]
+    fn empty_command() {
+        let mist;
+        if let Ok(None) = interpret_as_midi( "" ) {
+            mist = "";
+        }else{
+            mist = "empty EXEC shoud be Ok(None)";
+        }
+        assert!( mist == "", ">> {mist} <<");
     }
 }
 

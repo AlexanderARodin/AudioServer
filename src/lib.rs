@@ -9,13 +9,7 @@ pub use audio_server::AudioServer as AudioServer;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use raalog::log;
 
-    #[test]
-    fn creation() {
-        log::info("simple create and drop AudioServer");
-        let _ = AudioServer::new();
-    }
     #[test]
     fn state() {
         let mut audio = AudioServer::new();

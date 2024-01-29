@@ -1,6 +1,5 @@
 use std::error::Error;
 use toml::{ Table, Value };
-use raalog::log;
 
     use super::uni_source_variant::{ UniSourceVariant };
     use super::uni_source_variant::{ UniSourceVariant::* };
@@ -91,6 +90,7 @@ Name = 'None'
 #[cfg(test)]
 mod audio_source {
     use super::*;
+    use raalog::log;
 
     #[test]
     fn empty_config() {
