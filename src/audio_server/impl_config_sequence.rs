@@ -43,9 +43,9 @@ fn parse_notes( array: &Vec<Value>, transpose: i32, speed: f32 ) -> Result< Midi
         for item in array {
             match item {
                 Value::String(midi_str) => {
-                    if let Some(midi) = super::impl_exec::interpret_as_midi(midi_str)? {
-                        let mut midi_trans = midi.to_midi_general();
-                        midi_trans.data1 += transpose;
+                    if let Some(midi_src) = super::impl_exec::interpret_as_midi(midi_str)? {
+                        let mut midi = midi_src;
+                        midi.data1 += transpose;
                         seq.push( speed*time_offset, &midi );
                         time_offset = 0.0;
                     }else{

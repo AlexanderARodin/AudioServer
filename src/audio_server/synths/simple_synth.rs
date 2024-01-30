@@ -60,7 +60,7 @@ impl AudioRender for SimpleSynth {
 //  //  //  //  //  //  //  //
 impl MidiReceiver for SimpleSynth {
     fn reset(&mut self) {
-        log::info("SimpleSynth: reset");
+        log::info("SimpleSynth: reset (do nothing)");
     }
     fn process_midi_command(&mut self, 
                             channel: i32, command: i32, 

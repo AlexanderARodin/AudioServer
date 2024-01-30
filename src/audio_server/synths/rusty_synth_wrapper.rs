@@ -55,12 +55,10 @@ impl AudioRender for RustySynthWrapper {
     }
 }
 
+
 //  //  //  //  //  //  //  //
-//      RENDER interface
+//      ?
 //  //  //  //  //  //  //  //
-
-
-
 impl MidiReceiver for RustySynthWrapper {
     fn reset(&mut self) {
         log::info("RustySynthWrapper: reset");

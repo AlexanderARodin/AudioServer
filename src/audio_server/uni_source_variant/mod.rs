@@ -61,8 +61,7 @@ impl UniSourceVariant {
 //      interface
 //  //  //  //  //  //  //  //
 impl UniSourceVariant {
-    pub(crate) fn send_to_synth(&mut self, midi_msg: &MidiMessage) {
-        let midi = midi_msg.to_midi_general();
+    pub(crate) fn send_to_synth(&mut self, midi: &MidiMessage) {
         match &self {
             Silence => {
                 return
@@ -86,7 +85,7 @@ impl UniSourceVariant {
             Sequencer( sequencer ) => {
                 let mut locked_sequencer = sequencer.lock()
                     .expect("panick on locking UniSourceVariant::Sequencer( sequencer )");
-                locked_sequencer.send_to_synth(midi_msg);
+                locked_sequencer.send_to_synth(midi);
             },
             _ => {
                 log::info("outstanding");

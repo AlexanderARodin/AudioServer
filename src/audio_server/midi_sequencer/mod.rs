@@ -46,11 +46,10 @@ impl MidiSequencer {
     pub fn install_synth(&mut self, new_synth: Option<Arc<Mutex<dyn MidiSynth>>>) {
         self.midi_synth = new_synth;
     }
-    pub fn send_to_synth(&mut self, midi_msg: &MidiMessage) {
+    pub fn send_to_synth(&mut self, midi: &MidiMessage) {
         if let Some( synth ) = &self.midi_synth {
             let mut locked_synth = synth.lock()
                 .expect("FATAL: can't lock MidiSynth!");
-            let midi = midi_msg.to_midi_general();
             let midi_recevier: &mut dyn MidiReceiver = locked_synth.get_as_midi_receiver();
             midi_recevier.process_midi_command( midi.channel, 
                                                 midi.command, 

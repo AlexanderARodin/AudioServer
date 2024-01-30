@@ -23,11 +23,29 @@ impl MidiSequence {
 }
 
 //  //  //  //  //  //  //  //
+//      CORE: TimedMidiMessage
+//  //  //  //  //  //  //  //
+#[derive(Clone)]
+struct TimedMidiMessage {
+    time: f32,
+    midi: MidiMessage,
+}
+impl TimedMidiMessage {
+    #[allow(dead_code)]
+    fn new(time: f32, midi: &MidiMessage) -> Self {
+        Self {
+            time,
+            midi: midi.clone(),
+        }
+    }
+} 
+
+//  //  //  //  //  //  //  //
 //      interface
 //  //  //  //  //  //  //  //
 impl MidiSequence {
     #[allow(dead_code)]
-    pub fn push(&mut self, delay: f32, msg: &MidiMessage) {
+    pub fn push(&mut self, delay: f32, midi: &MidiMessage) {
         let len = self.list.len();
         let prev_time:f32 = match len {
             0 => {
@@ -37,7 +55,7 @@ impl MidiSequence {
                 self.list[len - 1].time
             }
         };
-        let new_value = TimedMidiMessage::new(prev_time+delay, msg.clone() );
+        let new_value = TimedMidiMessage::new(prev_time+delay, midi );
         self.list.push( new_value );
     }
 
@@ -57,11 +75,10 @@ impl MidiSequence {
             if self.elapsed_time < tm_msg.time {
                 break;
             }
-            let midi = tm_msg.midi_msg.to_midi_general();
-            receiver.process_midi_command( midi.channel,
-                                           midi.command, 
-                                           midi.data1, 
-                                           midi.data2 );
+            receiver.process_midi_command( tm_msg.midi.channel,
+                                           tm_msg.midi.command, 
+                                           tm_msg.midi.data1, 
+                                           tm_msg.midi.data2 );
             self.current_index += 1;
         }
     }
@@ -73,24 +90,6 @@ impl MidiSequence {
 
 }
 
-
-//  //  //  //  //  //  //  //
-//      CORE: TimedMidiMessage
-//  //  //  //  //  //  //  //
-#[derive(Clone)]
-struct TimedMidiMessage {
-    time: f32,
-    midi_msg: MidiMessage,
-}
-impl TimedMidiMessage {
-    #[allow(dead_code)]
-    fn new(time: f32, midi_msg: MidiMessage) -> Self {
-        Self {
-            time,
-            midi_msg
-        }
-    }
-} 
 
 
 
@@ -113,7 +112,7 @@ mod test{
     #[test]
     fn push() {
         let mut seq = MidiSequence::new();
-        let a_note = MidiMessage::NoteOn(1,2,3);
+        let a_note = MidiMessage::note_on(1,2,3);
         seq.push( 0.5, &a_note );
         assert!( seq.list.len() == 1, "len must be 1");
         assert!( seq.list[0].time == 0.5, "time must be 0.5");
@@ -160,7 +159,7 @@ mod main_test{
     #[test]
     fn send_next_sequence() {
         let mut seq = MidiSequence::new();
-        let a_note = MidiMessage::NoteOn(1,2,3);
+        let a_note = MidiMessage::note_on(1,2,3);
         seq.push( 0.5, &a_note );
         assert!( seq.list.len() == 1, "len must be 1");
         assert!( seq.list[0].time == 0.5, "time must be 0.5");
@@ -177,19 +176,19 @@ mod main_test{
     #[test]
     fn timing_1() {
         let mut seq = MidiSequence::new();
-        let c_on = MidiMessage::NoteOn(1,60,80);
-        let c_off = MidiMessage::NoteOff(1,60,80);
+        let c_on = MidiMessage::note_on(1,60,80);
+        let c_off = MidiMessage::note_off(1,60,80);
         seq.push( 0., &c_on );
         seq.push( 0.5, &c_off );
-        let d_on = MidiMessage::NoteOn(1,62,80);
-        let d_off = MidiMessage::NoteOff(1,62,80);
+        let d_on = MidiMessage::note_on(1,62,80);
+        let d_off = MidiMessage::note_off(1,62,80);
         seq.push( 0., &d_on );
         seq.push( 1., &d_off );
         
         let mut tst_rec = ReceiverTest::new();
         seq.send_next_sequence( 0., &mut tst_rec );
         assert!( tst_rec.buf.len() == 1, "A: must be some content but {}", tst_rec.buf.len());
-        let midi = tst_rec.buf[0].to_midi_general();
+        let midi = &tst_rec.buf[0];
         assert!( midi.channel == 1, "must be <c_on.ch>");
         assert!( midi.command == 0x90, "must be <c_on.cm>");
         assert!( midi.data1 == 60, "must be <c_on.dt1>");
@@ -204,7 +203,7 @@ mod main_test{
         let mut tst_re3 = ReceiverTest::new();
         seq.send_next_sequence( 9., &mut tst_re3 );
         assert!( tst_re3.buf.len() == 1, "C: must be ONE but {}", tst_re3.buf.len());
-        let mid3 = tst_re3.buf[0].to_midi_general();
+        let mid3 = &tst_re3.buf[0];
         assert!( mid3.channel == 1, "must be <d_off.ch>");
         assert!( mid3.command == 0x80, "must be <d_off.cm>");
         assert!( mid3.data1 == 62, "must be <d_off.dt1>");

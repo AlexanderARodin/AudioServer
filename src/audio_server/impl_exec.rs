@@ -32,14 +32,14 @@ impl AudioServer {
         match commands {
             "seq auto" => {
                 let mut seq = MidiSequence::new();
-                seq.push( 0.0, &MidiMessage::NoteOn( 1,90,80) );
-                seq.push( 0.5, &MidiMessage::NoteOff(1,90,80) );
-                seq.push( 0., &MidiMessage::NoteOn( 1,91,80) );
-                seq.push( 0.5, &MidiMessage::NoteOff(1,91,80) );
-                seq.push( 0., &MidiMessage::NoteOn( 1,92,80) );
-                seq.push( 0.5, &MidiMessage::NoteOff(1,92,80) );
-                seq.push( 0., &MidiMessage::NoteOn( 1,91,80) );
-                seq.push( 0.5, &MidiMessage::NoteOff(1,91,80) );
+                seq.push( 0.0, &MidiMessage::note_on( 1,90,80) );
+                seq.push( 0.5, &MidiMessage::note_off(1,90,80) );
+                seq.push( 0., &MidiMessage::note_on( 1,91,80) );
+                seq.push( 0.5, &MidiMessage::note_off(1,91,80) );
+                seq.push( 0., &MidiMessage::note_on( 1,92,80) );
+                seq.push( 0.5, &MidiMessage::note_off(1,92,80) );
+                seq.push( 0., &MidiMessage::note_on( 1,91,80) );
+                seq.push( 0.5, &MidiMessage::note_off(1,91,80) );
                 self.set_sequence(seq, true);
                 Ok(())
             },
@@ -78,12 +78,12 @@ pub(crate) fn interpret_as_midi( cmd: &str ) -> Result< Option<MidiMessage>, Box
     if cmd.starts_with("on") {
         let from_index = 2;
         let (key, velocity) = extract_onoff_params(cmd.get(from_index..))?;
-        return Ok(Some(MidiMessage::NoteOn(1,key,velocity)));
+        return Ok(Some(MidiMessage::note_on(1,key,velocity)));
     }
     if cmd.starts_with("off") {
         let from_index = 3;
         let (key, velocity) = extract_onoff_params(cmd.get(from_index..))?;
-        return Ok(Some(MidiMessage::NoteOff(1,key,velocity)));
+        return Ok(Some(MidiMessage::note_off(1,key,velocity)));
     }
     Ok(None)
 }
@@ -128,14 +128,13 @@ mod interpret_notes {
         let mist;
         match interpret_as_midi( "on5" ) {
             Ok(Some(midi)) => {
-                let gmidi = midi.to_midi_general();
-                if gmidi.channel != 1 {
+                if midi.channel != 1 {
                     mist = "midi channel has to be 1";
-                }else if gmidi.command != 0x90  {
-                    mist = "midi command has to be NoteOn";
-                }else if gmidi.data1 != 5 {
+                }else if midi.command != 0x90  {
+                    mist = "midi command has to be note_on";
+                }else if midi.data1 != 5 {
                     mist = "midi data1 has to be key5";
-                }else if gmidi.data2 != 64 {
+                }else if midi.data2 != 64 {
                     mist = "midi data2 has to be velo64";
                 }else{
                     mist = "";
@@ -156,14 +155,13 @@ mod interpret_notes {
         let mist;
         match interpret_as_midi( "off93#12" ) {
             Ok(Some(midi)) => {
-                let gmidi = midi.to_midi_general();
-                if gmidi.channel != 1 {
+                if midi.channel != 1 {
                     mist = "midi channel has to be 1";
-                }else if gmidi.command != 0x80  {
-                    mist = "midi command has to be NoteOff";
-                }else if gmidi.data1 != 93 {
+                }else if midi.command != 0x80  {
+                    mist = "midi command has to be note_off";
+                }else if midi.data1 != 93 {
                     mist = "midi data1 has to be key93";
-                }else if gmidi.data2 != 12 {
+                }else if midi.data2 != 12 {
                     mist = "midi data2 has to be velo12";
                 }else{
                     mist = "";
@@ -184,14 +182,13 @@ mod interpret_notes {
         let mist;
         match interpret_as_midi( "off32" ) {
             Ok(Some(midi)) => {
-                let gmidi = midi.to_midi_general();
-                if gmidi.channel != 1 {
+                if midi.channel != 1 {
                     mist = "midi channel has to be 1";
-                }else if gmidi.command != 0x80  {
-                    mist = "midi command has to be NoteOff";
-                }else if gmidi.data1 != 32 {
+                }else if midi.command != 0x80  {
+                    mist = "midi command has to be note_off";
+                }else if midi.data1 != 32 {
                     mist = "midi data1 has to be key32";
-                }else if gmidi.data2 != 64 {
+                }else if midi.data2 != 64 {
                     mist = "midi data2 has to be velo64";
                 }else{
                     mist = "";
@@ -212,14 +209,13 @@ mod interpret_notes {
         let mist;
         match interpret_as_midi( "on66#77" ) {
             Ok(Some(midi)) => {
-                let gmidi = midi.to_midi_general();
-                if gmidi.channel != 1 {
+                if midi.channel != 1 {
                     mist = "midi channel has to be 1";
-                }else if gmidi.command != 0x90  {
-                    mist = "midi command has to be NoteOn";
-                }else if gmidi.data1 != 66 {
+                }else if midi.command != 0x90  {
+                    mist = "midi command has to be note_on";
+                }else if midi.data1 != 66 {
                     mist = "midi data1 has to be key66";
-                }else if gmidi.data2 != 77 {
+                }else if midi.data2 != 77 {
                     mist = "midi data2 has to be velo77";
                 }else{
                     mist = "";
