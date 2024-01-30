@@ -21,10 +21,14 @@ impl AudioServer {
                 return Err(Box::from("invalid section AudioSource"));
             }
         }
+        if let Some(seq_val) = tbl.get("Sequence") {
+            self.midi_sequence = Some( Self::create_midi_sequence( seq_val )? );
+        }
 
         Ok(())
     }
 
+    //  //  //  //  //  //  //
     fn install_source_to_audio(&mut self) {
         match &self.uni_source {
             Silence => {
@@ -81,10 +85,10 @@ mod basic {
 
 #[cfg(test)]
 static TEST_CONFIG: &str = r#"
-anystring = 'any'
-[AudioSource]
-Name = 'None'
-[Sequencer]
+    anystring = 'any'
+    [AudioSource]
+    Name = 'None'
+    [Sequencer]
 "#;
 
 #[cfg(test)]

@@ -69,7 +69,7 @@ impl MidiReceiver for SimpleSynth {
         match command {
             0x80 => self.note_off(channel, data1),       // Note Off
             0x90 => self.note_on(channel, data1, data2), // Note On
-            _ => log::info("SimpleSynth: W| unknown midi command")
+            _ => log::info("SimpleSynth: W| unknown midi command. Ignored")
         }
     }
 }
@@ -79,12 +79,10 @@ impl MidiReceiver for SimpleSynth {
 //  //  //  //  //  //  //  //
 impl SimpleSynth {
     pub fn note_on(&mut self, _channel: i32, key: i32, velocity: i32) {
-        log::info("SimpleSynth: note ON");
         self.amplitude = 0.999*SimpleSynth::amplitude_from( velocity );
         self.frequency = SimpleSynth::frequency_from( key );
     }
     pub fn note_off(&mut self, _channel: i32, _key: i32) {
-        log::info("SimpleSynth: note OFF");
         self.amplitude = 0_f32;
         self.counter = 0_f32;
     }

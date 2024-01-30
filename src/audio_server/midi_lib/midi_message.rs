@@ -1,3 +1,8 @@
+
+
+//  //  //  //  //  //  //  //
+//      CORE:   MidiGeneral
+//  //  //  //  //  //  //  //
 pub struct MidiGeneral {
     pub channel: i32,
     pub command: i32,
@@ -15,10 +20,20 @@ impl Clone for MidiGeneral {
     }
 }
 
+//  //  //  //  //  //  //  //
+//      CORE:   MidiMessage
+//  //  //  //  //  //  //  //
 pub enum MidiMessage {
   General( MidiGeneral ), // channel, command, data1, data2
   NoteOn( i32, i32, i32 ), // channel, 0x90, key, velocity
   NoteOff( i32, i32, i32 ), // channel, 0x80, key, velocity
+}
+impl Clone for MidiMessage {
+    fn clone(&self) -> Self {
+        let midi_general = self.to_midi_general();
+        MidiMessage::from_midi_general(&midi_general)
+            .get_parsed()
+    }
 }
 
 impl MidiMessage {
@@ -31,9 +46,17 @@ impl MidiMessage {
             data2
         })
     }
+}
+
+//  //  //  //  //  //  //  //
+//      CORE:   MidiMessage
+//  //  //  //  //  //  //  //
+impl MidiMessage {
+
     pub fn from_midi_general( midi_general: &MidiGeneral ) -> Self {
         Self::General( midi_general.clone() )
     }
+
     #[allow(dead_code)]
     pub fn to_general(&self) -> Self {
         let midi_general = self.to_midi_general();
@@ -91,25 +114,13 @@ impl MidiMessage {
             },
         }
     }
-
-}
-
-impl Clone for MidiMessage {
-    fn clone(&self) -> Self {
-        let midi_general = self.to_midi_general();
-        MidiMessage::from_midi_general(&midi_general)
-            .get_parsed()
-    }
 }
 
 
 
 
-
-
 //  //  //  //  //  //  //  //
-//  //  //  //  //  //  //  //
-//  //  //  //  //  //  //  //
+//      TESTs
 //  //  //  //  //  //  //  //
 #[cfg(test)]
 mod test{

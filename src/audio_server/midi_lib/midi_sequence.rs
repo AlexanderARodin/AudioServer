@@ -2,8 +2,9 @@ use super::{MidiMessage,MidiReceiver};
 
 
 //  //  //  //  //  //  //  //
-//      CORE
+//      CORE: MidiSequence
 //  //  //  //  //  //  //  //
+#[derive(Clone)]
 pub struct MidiSequence {
     current_index: usize,
     elapsed_time: f32,
@@ -74,8 +75,9 @@ impl MidiSequence {
 
 
 //  //  //  //  //  //  //  //
-//      CORE
+//      CORE: TimedMidiMessage
 //  //  //  //  //  //  //  //
+#[derive(Clone)]
 struct TimedMidiMessage {
     time: f32,
     midi_msg: MidiMessage,

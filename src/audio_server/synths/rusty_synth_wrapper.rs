@@ -87,13 +87,13 @@ impl MidiSynth for RustySynthWrapper {
 fn err_to_string( e: &SynthesizerError ) -> String {
     match e {
         SynthesizerError::SampleRateOutOfRange(sample_rate) => {
-            return format!("SynthesizerError.SampleRateOutOfRange: {}", sample_rate);
+            return format!("SynthesizerError.SampleRateOutOfRange: <{}>", sample_rate);
         },
         SynthesizerError::BlockSizeOutOfRange(size) => {
-            return format!("SynthesizerError.BlockSizeOutOfRange: {}", size);
+            return format!("SynthesizerError.BlockSizeOutOfRange: <{}>", size);
         },
         SynthesizerError::MaximumPolyphonyOutOfRange(size) => {
-            return format!("SynthesizerError.MaximumPolyphonyOutOfRange: {}", size);
+            return format!("SynthesizerError.MaximumPolyphonyOutOfRange: <{}>", size);
         },
         _ => {
             return format!("SynthesizerError.<unknown>");

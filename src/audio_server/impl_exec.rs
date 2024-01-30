@@ -13,6 +13,14 @@ use super::AudioServer;
 
 impl AudioServer {
     pub(crate) fn invoke_exec_parsing(&mut self, commands: &str) -> Result<(), Box<dyn Error>> {
+        if commands == "play once" {
+            if let Some(seq_orig) = &self.midi_sequence {
+                self.set_sequence( seq_orig.clone(), false);
+                return Ok(());
+            }else{
+                return Err( Box::from("there is no loaded sequence for play") );
+            }
+        }
         match interpret_as_midi(commands) {
             Ok(Some(midi)) => {
                 self.uni_source.send_to_synth(&midi);
@@ -22,20 +30,6 @@ impl AudioServer {
             Ok(None) => {},
         }
         match commands {
-            "seq 1" => {
-                let mut seq = MidiSequence::new();
-                seq.push( 0.0, &MidiMessage::NoteOn( 1,90,80) );
-                seq.push( 0.5, &MidiMessage::NoteOff(1,90,80) );
-                seq.push( 0., &MidiMessage::NoteOn( 1,91,80) );
-                seq.push( 0.5, &MidiMessage::NoteOff(1,91,80) );
-                seq.push( 0., &MidiMessage::NoteOn( 1,92,80) );
-                seq.push( 0.5, &MidiMessage::NoteOff(1,92,80) );
-                seq.push( 0., &MidiMessage::NoteOn( 1,91,80) );
-                seq.push( 0.5, &MidiMessage::NoteOff(1,91,80) );
-                seq.push( 1., &MidiMessage::NoteOff(1,92,80) );
-                self.set_sequence(seq, false);
-                Ok(())
-            },
             "seq auto" => {
                 let mut seq = MidiSequence::new();
                 seq.push( 0.0, &MidiMessage::NoteOn( 1,90,80) );
@@ -51,7 +45,7 @@ impl AudioServer {
             },
             _ => {
                 log::error(commands);
-                return Err(Box::from("EXEC not implemented"));
+                return Err(Box::from("EXEC not implemented (yet?)"));
             },
         }
     }
@@ -80,7 +74,7 @@ impl AudioServer {
 //  //  //  //  //  //  //  //
 //      UTILs
 //  //  //  //  //  //  //  //
-fn interpret_as_midi( cmd: &str ) -> Result< Option<MidiMessage>, Box<dyn Error> > {
+pub(crate) fn interpret_as_midi( cmd: &str ) -> Result< Option<MidiMessage>, Box<dyn Error> > {
     if cmd.starts_with("on") {
         let from_index = 2;
         let (key, velocity) = extract_onoff_params(cmd.get(from_index..))?;

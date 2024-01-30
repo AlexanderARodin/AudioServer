@@ -3,7 +3,6 @@ use std::sync::{Arc,Mutex};
 use toml::{ Table, Value };
 
     use super::super::synths::simple_synth::SimpleSynth;
-//    use super::super::synths::rusty_synth_wrapper::RustySynthWrapper;
     use super::super::midi_sequencer::MidiSequencer;
 
 

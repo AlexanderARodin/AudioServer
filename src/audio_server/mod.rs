@@ -10,6 +10,7 @@ use raalog::log;
     use uni_source_variant::{ UniSourceVariant, UniSourceVariant::* };
 
     mod midi_lib;
+    use midi_lib::midi_sequence::MidiSequence;
 
     mod synths;
     mod midi_sequencer;
@@ -19,11 +20,13 @@ use raalog::log;
 //      CORE
 //  //  //  //  //  //  //  //
 mod impl_config;
+mod impl_config_sequence;
 mod impl_exec;
 
 pub struct AudioServer {
     audio_core: AudioCore,
     uni_source: UniSourceVariant,
+    midi_sequence: Option<MidiSequence>,
 }
 
 impl AudioServer {
@@ -32,6 +35,7 @@ impl AudioServer {
         Self{ 
             audio_core: AudioCore::new(),
             uni_source: UniSourceVariant::Silence,
+            midi_sequence: None,
         }
     }
 }
