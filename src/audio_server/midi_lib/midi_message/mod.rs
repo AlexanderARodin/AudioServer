@@ -3,6 +3,8 @@
 //  //  //  //  //  //  //  //
 //      CORE
 //  //  //  //  //  //  //  //
+mod impl_from_toml;
+
 #[derive(Clone)]
 pub struct MidiMessage {
     pub channel: i32,
@@ -21,6 +23,7 @@ impl MidiMessage {
             data2,
         }
     }
+
     pub fn note_on( channel: i32, key: i32, velocity: i32 ) -> Self {
         Self{
             channel: channel,
@@ -29,6 +32,7 @@ impl MidiMessage {
             data2:   velocity,
         }
     }
+
     pub fn note_off( channel: i32, key: i32, velocity: i32 ) -> Self {
         Self{
             channel: channel,
