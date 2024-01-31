@@ -9,6 +9,20 @@ use super::MidiMessage;
 
 impl MidiMessage {
 
+    pub fn from_str( note: &str ) -> Result< Self, Box<dyn Error> > {
+        let tml = format!("note = {}", note)
+            .parse::<Table>()?;
+        match tml.get("note") {
+            Some(val) => {
+                return Self::from_toml_value( val );
+            },
+            _ => {
+                return Err( Box::from("<MidiMessage::from_str>: <internal algorithm error>") );
+            },
+        }
+    }
+
+
     pub fn from_toml_value( tml: &toml::Value ) -> Result< Self, Box<dyn Error> > {
         match tml {
             Value::Array(arr) => {
@@ -72,6 +86,31 @@ mod midi_from_toml {
     use super::*;
     use raalog::log;
 
+    #[test]
+    fn str_note_on() {
+        let str_tml = "[ 1, 'on', 66, 80, 'some additional text', ]";
+        let mist;
+        match MidiMessage::from_str( str_tml ) {
+            Ok(midi) => {
+                if midi.channel != 1 {
+                    mist = "incorrect channel";
+                }else if midi.command != 0x90 {
+                    mist = "incorrect command";
+                }else if midi.data1 != 66 {
+                    mist = "incorrect key";
+                }else if midi.data2 != 80 {
+                    mist = "incorrect velocity";
+                }else{
+                    mist = "";
+                }
+            },
+            Err(e) => {
+                mist = "has not to be Error";
+                log::error(&e.to_string());
+            },
+        }
+        assert!( mist == "", ">> {mist} <<");
+    }
     #[test]
     fn note_off() {
         let tml = r#"

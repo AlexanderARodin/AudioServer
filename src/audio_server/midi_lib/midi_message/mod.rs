@@ -13,6 +13,7 @@ pub struct MidiMessage {
     pub data2: i32
 }
 
+#[allow(dead_code)]
 impl MidiMessage {
 
     pub fn new( channel: i32, command: i32, data1: i32, data2: i32 ) -> Self {
