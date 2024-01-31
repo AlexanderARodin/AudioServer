@@ -4,6 +4,8 @@ use super::{MidiMessage,MidiReceiver};
 //  //  //  //  //  //  //  //
 //      CORE: MidiSequence
 //  //  //  //  //  //  //  //
+mod impl_sequence_from_toml;
+
 #[derive(Clone)]
 pub struct MidiSequence {
     current_index: usize,
@@ -89,8 +91,6 @@ impl MidiSequence {
     }
 
 }
-
-
 
 
 

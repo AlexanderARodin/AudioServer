@@ -9,19 +9,23 @@ use super::MidiMessage;
 
 impl MidiMessage {
 
-    pub fn from( tml: &toml::Value ) -> Result< Self, Box<dyn Error> > {
+    pub fn from_toml_value( tml: &toml::Value ) -> Result< Self, Box<dyn Error> > {
         match tml {
             Value::Array(arr) => {
-                let channel = try_get_integer(arr, 0)?;
-                let command = try_get_command(arr, 1)?;
-                let data1   = try_get_integer(arr, 2)?;
-                let data2   = try_get_integer(arr, 3)?;
-                return Ok(MidiMessage::new(channel, command, data1, data2));
+                return Self::from(arr);
             },
             _ => {
                 return Err( Box::from("<MidiMessage::from>: argument is not an array") );
             },
         }
+    }
+
+    pub fn from( arr: &Vec<Value>) -> Result< Self, Box<dyn Error> > {
+        let channel = try_get_integer(arr, 0)?;
+        let command = try_get_command(arr, 1)?;
+        let data1   = try_get_integer(arr, 2)?;
+        let data2   = try_get_integer(arr, 3)?;
+        return Ok(MidiMessage::new(channel, command, data1, data2));
     }
 }
 
@@ -76,7 +80,7 @@ mod midi_from_toml {
                     .parse::<Table>().unwrap();
         let mist;
         let val = tml.get("notes").unwrap();
-        match MidiMessage::from( val ) {
+        match MidiMessage::from_toml_value( val ) {
             Ok(midi) => {
                 if midi.channel != 3 {
                     mist = "incorrect channel";
@@ -105,7 +109,7 @@ mod midi_from_toml {
                     .parse::<Table>().unwrap();
         let mist;
         let val = tml.get("notes").unwrap();
-        match MidiMessage::from( val ) {
+        match MidiMessage::from_toml_value( val ) {
             Ok(midi) => {
                 if midi.channel != 1 {
                     mist = "incorrect channel";
@@ -134,7 +138,7 @@ mod midi_from_toml {
                     .parse::<Table>().unwrap();
         let mist;
         let val = tml.get("notes").unwrap();
-        match MidiMessage::from( val ) {
+        match MidiMessage::from_toml_value( val ) {
             Ok(_midi) => {
                 mist = "have to be Error";
             },
@@ -153,7 +157,7 @@ mod midi_from_toml {
                     .parse::<Table>().unwrap();
         let mist;
         let val = tml.get("notes").unwrap();
-        match MidiMessage::from( val ) {
+        match MidiMessage::from_toml_value( val ) {
             Ok(_midi) => {
                 mist = "have to be Error";
             },
