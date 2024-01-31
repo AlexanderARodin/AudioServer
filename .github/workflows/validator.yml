@@ -22,7 +22,7 @@ jobs:
     - name: Rust Cache # cache the rust build artefacts
       uses: Swatinem/rust-cache@v1
 
-    - name: Checks
-      run : make check
+    - name: Tests
+      run : make test
 
 # EOF
