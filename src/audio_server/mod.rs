@@ -23,10 +23,18 @@ mod impl_config;
 mod impl_config_sequence;
 mod impl_exec;
 
+//  //  //  //  //  //  //  //
+pub enum Config<'a> {
+    CoreConfigFromStr(&'a str, Vec<&'static [u8]> ),
+    CoreConfig(&'a Table,      Vec<&'static [u8]> ),
+}
+
 pub struct AudioServer {
     audio_core: AudioCore,
     uni_source: UniSourceVariant,
     midi_sequence: Option<MidiSequence>,
+    core_config: Table,
+    sf_array: Vec<&'static [u8]>,
 }
 
 impl AudioServer {
@@ -36,6 +44,8 @@ impl AudioServer {
             audio_core: AudioCore::new(),
             uni_source: UniSourceVariant::Silence,
             midi_sequence: None,
+            core_config: Table::new(),
+            sf_array: Vec::new(),
         }
     }
 }
@@ -52,6 +62,19 @@ impl Drop for AudioServer {
 //      main INTERFACE
 //  //  //  //  //  //  //  //
 impl AudioServer {
+
+    //  //  //  //  //  //  //
+    pub fn load_config( &mut self, setup: &Config  ) -> Result<(), Box<dyn Error>> {
+        match setup {
+            Config::CoreConfig( tbl, sf_array ) => {
+                self.invoke_config_loading( &tbl, sf_array )
+            },
+            Config::CoreConfigFromStr( txt, sf_array ) => {
+                let tbl = txt.parse::<Table>()?;
+                self.invoke_config_loading( &tbl, sf_array )
+            },
+        }
+    }
 
     //  //  //  //  //  //  //
     pub fn config( &mut self, setup: &str, data: Option<&[u8]>  ) -> Result<(), Box<dyn Error>> {

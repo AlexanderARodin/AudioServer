@@ -1,5 +1,6 @@
     mod audio_server;
 pub use audio_server::AudioServer as AudioServer;
+pub use audio_server::Config as Config;
 
 
 
