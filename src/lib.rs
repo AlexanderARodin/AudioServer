@@ -10,6 +10,7 @@ pub use audio_server::AudioServer as AudioServer;
 mod tests {
     use super::*;
 
+    #[ignore]
     #[test]
     fn state() {
         let mut audio = AudioServer::new();

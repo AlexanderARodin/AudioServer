@@ -147,7 +147,7 @@ fn invoke_run_output_device( params: OutputDeviceParameters,
 //          TESTS
 //  //  //  //  //  //  //  //
 #[cfg(test)]
-mod native_only_test {
+mod native_only {
     use super::*;
 
     #[test]
