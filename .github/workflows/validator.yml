@@ -11,6 +11,9 @@ jobs:
   make-pages:
     runs-on: ubuntu-latest
     steps:
+    - name: Pckgs
+      run : apt update && apt install libasound2-dev
+      
     - name: clone
       uses: actions/checkout@v4
     - uses: actions-rs/toolchain@v1 # get rust toolchain for wasm
@@ -22,9 +25,6 @@ jobs:
     - name: Rust Cache # cache the rust build artefacts
       uses: Swatinem/rust-cache@v1
 
-    - name: Pckgs
-      run : cargo install libasound2-dev
-      
     - name: Tests
       run : make test.dummy
 
