@@ -6,26 +6,26 @@ on:
     branches:
       - main
       - dev
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
-  make-pages:
+  build-N-test:
     runs-on: ubuntu-latest
+
     steps:
     - name: clone
       uses: actions/checkout@v4
-    - uses: actions-rs/toolchain@v1 # get rust toolchain for wasm
+        
+    - uses: actions-rs/toolchain@v1
       with:
         profile: minimal
         toolchain: stable
-        target: wasm32-unknown-unknown
         override: true
-    - name: Rust Cache # cache the rust build artefacts
-      uses: Swatinem/rust-cache@v1
+    - name: Rust Cache
+      uses: Swatinem/rust-cache@v2
 
     - name: Tests
-      env:
-        SDL_VIDEODRIVER: "dummy" 
-        SDL_AUDIODRIVER: "disk"
       run : make test.dummy
 
 # EOF
