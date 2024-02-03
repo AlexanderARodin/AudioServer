@@ -15,7 +15,8 @@ raalog = { git = "https://github.com/AlexanderARodin/raalog.git", tag="v0.2.0" }
 tinyaudio = "0.1.1"
 rustysynth = "1.2.0"
 
-call_list = { path = "../call_list" }
+# call_list = { path = "../call_list" }
+call_list = { git = "https://github.com/AlexanderARodin/call_list.git", branch="main" }
 
 
 [features]
