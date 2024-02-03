@@ -5,7 +5,7 @@ help:
 all: test release.native release.wasm
 
 test.dummy:
-	@cargo test --no-default-features
+	@cargo test --no-default-features -- --show-output
 test.real:
 	@cargo test
 check:
