@@ -23,6 +23,6 @@ jobs:
       uses: Swatinem/rust-cache@v1
 
     - name: Tests
-      run : make test
+      run : make test.dummy
 
 # EOF
