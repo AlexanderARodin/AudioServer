@@ -23,6 +23,9 @@ jobs:
       uses: Swatinem/rust-cache@v1
 
     - name: Tests
+      env:
+        SDL_VIDEODRIVER: "dummy" 
+        SDL_AUDIODRIVER: "disk"
       run : make test.dummy
 
 # EOF
