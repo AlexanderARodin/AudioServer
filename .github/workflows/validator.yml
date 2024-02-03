@@ -26,8 +26,8 @@ jobs:
       uses: Swatinem/rust-cache@v2
 
     - name: Build
-      run : cargo build
+      run : cargo build --no-default-features
     - name: Tests
-      run : make test.dummy
+      run : cargo test --no-default-features -- --show-output
 
 # EOF
