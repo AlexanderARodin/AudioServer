@@ -18,6 +18,9 @@ rustysynth = "1.2.0"
 # call_list = { path = "../call_list" }
 call_list = { git = "https://github.com/AlexanderARodin/call_list.git", branch="main" }
 
+[target.'cfg(target_os = "linux")'.dependencies]
+alsa-sys = { verstion = "0.3.1" }
+
 
 [features]
 dummy_audio=[]
