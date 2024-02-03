@@ -4,6 +4,9 @@ use toml::{ Table, Value };
     use super::uni_source_variant::{ UniSourceVariant };
     use super::uni_source_variant::{ UniSourceVariant::* };
 
+#[cfg(feature="local")]
+use call_list_local as call_list;
+
 //  //  //  //  //  //  //  //
 //      config impl
 //  //  //  //  //  //  //  //

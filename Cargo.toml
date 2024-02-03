@@ -9,15 +9,21 @@ edition = "2021"
 [dependencies]
 tinyaudio = { version = "0.1.1", optional = true }
 rustysynth = "1.2.0"
+
 toml = "0.8.8"
 
 raalog = 	{ git = "https://github.com/AlexanderARodin/raalog.git", tag="v0.2.0" }
-call_list = 	{ git = "https://github.com/AlexanderARodin/call_list.git", branch="main" }
+
+call_list = 	{ git = "https://github.com/AlexanderARodin/call_list.git", branch="main", optional=true }
+call_list_local={ workspace = true, optional=true }
+#call_list_local={ path= "../../call_list", package="call_list", optional=true }
 
 
 
 
 [features]
-default = [ "real-audio" ]
+default = [ "real-audio", "dep:call_list" ]
 real-audio=["dep:tinyaudio"]
+
+local = [ "dep:call_list_local" ]
 
