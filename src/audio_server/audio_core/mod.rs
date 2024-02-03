@@ -2,7 +2,8 @@ use std::error::Error;
 use std::sync::{Arc,Mutex};
 
 use tinyaudio::OutputDeviceParameters;
-use tinyaudio::prelude::{BaseAudioOutputDevice,run_output_device};
+use tinyaudio::prelude::BaseAudioOutputDevice;
+
 
 use raalog::log;
 
@@ -91,6 +92,9 @@ impl AudioCore {
 impl AudioCore {
 
     fn activate_device_loop(&mut self) -> Result< (), Box<dyn Error>> {
+        #[cfg(test)]
+        log::info(" --> activate REAL AUDIO");
+        //
         let params = self.params.get_output_device_parameters();
         let render_holder_clone = self.render_holder.clone();
         let block_chunk = 2*self.params.block_size;
@@ -110,6 +114,7 @@ impl AudioCore {
 impl AudioCore {
 
     fn activate_device_loop(&mut self) -> Result< (), Box<dyn Error>> {
+        log::info(" --> activate DUMMY AUDIO");
         struct DummyAudio {
         }
         impl DummyAudio {
@@ -132,11 +137,14 @@ impl AudioCore {
 //  //  //  //  //  //  //  //
 //      PRIVATE lvl1
 //  //  //  //  //  //  //  //
+// REAL
+#[cfg(not(feature="dummy_audio"))]
 fn invoke_run_output_device( params: OutputDeviceParameters,
                            render_holder_clone: Arc<Mutex<RenderHolder>>,
                            block_chunk: usize,
                            block_size: usize ) -> Result< Box<dyn BaseAudioOutputDevice>, Box<dyn Error> > {
         
+        use tinyaudio::prelude::run_output_device;
         run_output_device( params, {
             let mut left :Vec<f32> = vec![ 0_f32; block_size ];
             let mut right:Vec<f32> = vec![ 0_f32; block_size ];
