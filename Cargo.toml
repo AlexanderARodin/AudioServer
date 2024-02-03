@@ -7,8 +7,10 @@ edition = "2021"
 
 
 [dependencies]
-raalog.workspace = true
-toml.workspace = true
+# raalog.workspace = true
+# toml.workspace = true
+toml = "0.8.8"
+raalog = { git = "https://github.com/AlexanderARodin/raalog.git", tag="v0.2.0" }
 
 tinyaudio = "0.1.1"
 rustysynth = "1.2.0"
