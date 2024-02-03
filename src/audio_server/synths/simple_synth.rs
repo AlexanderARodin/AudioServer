@@ -107,8 +107,7 @@ impl MidiSynth for SimpleSynth {
 
 
 //  //  //  //  //  //  //  //
-//  //  //  //  //  //  //  //
-//  //  //  //  //  //  //  //
+//      TESTs
 //  //  //  //  //  //  //  //
 #[cfg(test)]
 mod test_velocity {

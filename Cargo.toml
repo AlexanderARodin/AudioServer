@@ -7,17 +7,17 @@ edition = "2021"
 
 
 [dependencies]
-#raalog = { path="../../develop/raalog/" }
-#raalog = { git = "https://github.com/AlexanderARodin/raalog.git", branch="dev" }
-raalog = { git = "https://github.com/AlexanderARodin/raalog.git", tag="v0.2.0" }
-
-tinyaudio = "0.1.1"
+tinyaudio = { version = "0.1.1", optional = true }
 rustysynth = "1.2.0"
-
 toml = "0.8.8"
 
+raalog = 	{ git = "https://github.com/AlexanderARodin/raalog.git", tag="v0.2.0" }
+call_list = 	{ git = "https://github.com/AlexanderARodin/call_list.git", branch="main" }
 
 
-#[target.'cfg(target_arch = "wasm32")'.dependencies]
-#wasm-bindgen = "0.2.90"
+
+
+[features]
+default = [ "real-audio" ]
+real-audio=["dep:tinyaudio"]
 

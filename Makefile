@@ -4,7 +4,9 @@ help:
 
 all: test release.native release.wasm
 
-test:
+test.dummy:
+	@cargo test --no-default-features -- --show-output
+test.real:
 	@cargo test
 check:
 	@cargo rustc -- -Awarnings

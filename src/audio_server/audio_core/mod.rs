@@ -1,8 +1,15 @@
 use std::error::Error;
 use std::sync::{Arc,Mutex};
 
+
+#[cfg(not(feature="real-audio"))]
+mod dummy_tinyaudio;
+#[cfg(not(feature="real-audio"))]
+use dummy_tinyaudio as tinyaudio;
+
 use tinyaudio::OutputDeviceParameters;
-use tinyaudio::prelude::{BaseAudioOutputDevice,run_output_device};
+use tinyaudio::prelude::BaseAudioOutputDevice;
+
 
 use raalog::log;
 
@@ -85,36 +92,25 @@ impl AudioCore {
 //  //  //  //  //  //  //  //
 //      PRIVATE lvl0
 //  //  //  //  //  //  //  //
+
 impl AudioCore {
 
-//    fn refresh_tick_time(&self) {
-//        let mut locked_holder = self.render_holder.lock()
-//            .expect("panic on lockin holder_lock");
-//        locked_holder.tick_time = self.params.get_tick_time();
-//    }
-
     fn activate_device_loop(&mut self) -> Result< (), Box<dyn Error>> {
-        // prepare parameters
+        //
         let params = self.params.get_output_device_parameters();
         let render_holder_clone = self.render_holder.clone();
         let block_chunk = 2*self.params.block_size;
-        // try to start device loop
-        let device = invoke_run_output_device( params,
-                                             render_holder_clone,
-                                             block_chunk,
-                                             self.params.block_size );
-        // check result for errors
-        match device {
-            Err(e) => {
-                let errmsg = format!("{:?}",e);
-                log::error( &format!("AudioCore: {errmsg}") );
-                return Err(e)
-            },
-            Ok(running_device) => self.device = Some(running_device),
-        }
+        //
+        self.device = Some( invoke_run_output_device( 
+                                            params,
+                                            render_holder_clone,
+                                            block_chunk,
+                                            self.params.block_size )?
+            );
         Ok(())
     }
 }
+
 
 //  //  //  //  //  //  //  //
 //      PRIVATE lvl1
@@ -124,6 +120,7 @@ fn invoke_run_output_device( params: OutputDeviceParameters,
                            block_chunk: usize,
                            block_size: usize ) -> Result< Box<dyn BaseAudioOutputDevice>, Box<dyn Error> > {
         
+        use tinyaudio::prelude::run_output_device;
         run_output_device( params, {
             let mut left :Vec<f32> = vec![ 0_f32; block_size ];
             let mut right:Vec<f32> = vec![ 0_f32; block_size ];
@@ -147,24 +144,21 @@ fn invoke_run_output_device( params: OutputDeviceParameters,
 //          TESTS
 //  //  //  //  //  //  //  //
 #[cfg(test)]
-mod native_only_test {
+mod base_audio_core {
     use super::*;
 
     #[test]
-    #[ignore]
     fn create_inactive() {
         let audio = AudioCore::new();
         assert!(!audio.is_active());
     }
     #[test]
-    #[ignore]
     fn start_active() {
         let mut audio = AudioCore::new();
         let _ = audio.start();
         assert!(audio.is_active());
     }
     #[test]
-    #[ignore]
     fn start_stop() {
         let mut audio = AudioCore::new();
         let _ = audio.start();
