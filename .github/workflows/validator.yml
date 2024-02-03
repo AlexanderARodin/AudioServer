@@ -22,6 +22,9 @@ jobs:
     - name: Rust Cache # cache the rust build artefacts
       uses: Swatinem/rust-cache@v1
 
+    - name: Pckgs
+      run : cargo install libasound2-dev
+      
     - name: Tests
       run : make test.dummy
 
