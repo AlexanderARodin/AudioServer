@@ -11,9 +11,6 @@ jobs:
   make-pages:
     runs-on: ubuntu-latest
     steps:
-    - name: Pckgs
-      run : apt update && apt install libasound2-dev
-      
     - name: clone
       uses: actions/checkout@v4
     - uses: actions-rs/toolchain@v1 # get rust toolchain for wasm
