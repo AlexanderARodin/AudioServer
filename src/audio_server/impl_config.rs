@@ -80,7 +80,6 @@ impl AudioServer {
 mod basic {
     use super::*;
 
-    #[ignore]
     #[test]
     fn no_error() {
         let mut aud = AudioServer::new();
@@ -92,7 +91,6 @@ mod basic {
         }
         assert!(flag, "TEST_CONFIG is not valid");
     }
-    #[ignore]
     #[test]
     fn is_error() {
         let mut aud = AudioServer::new();
@@ -119,7 +117,6 @@ mod audio_source {
     use super::*;
     use raalog::log;
 
-    #[ignore]
     #[test]
     fn empty_config() {
         let mut aud = AudioServer::new();
@@ -131,7 +128,6 @@ mod audio_source {
         }
         assert!(flag, "empty config have not be an error");
     }
-    #[ignore]
     #[test]
     fn test_config() {
         let mut aud = AudioServer::new();
@@ -143,7 +139,6 @@ mod audio_source {
         }
         assert!(flag, "empty config have not be an error");
     }
-    #[ignore]
     #[test]
     fn audio_source_error() {
         let mut aud = AudioServer::new();
@@ -156,7 +151,6 @@ mod audio_source {
         }
         assert!(flag, "should be ERROR");
     }
-    #[ignore]
     #[test]
     fn no_main() {
         let mut aud = AudioServer::new();
@@ -169,7 +163,6 @@ mod audio_source {
         }
         assert!(flag, "should be ERROR");
     }
-    #[ignore]
     #[test]
     fn invalid_main() {
         let mut aud = AudioServer::new();

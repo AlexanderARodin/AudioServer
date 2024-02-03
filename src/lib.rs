@@ -11,7 +11,6 @@ pub use audio_server::Config as Config;
 mod tests {
     use super::*;
 
-    #[ignore]
     #[test]
     fn state() {
         let mut audio = AudioServer::new();

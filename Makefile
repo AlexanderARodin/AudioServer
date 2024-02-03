@@ -4,7 +4,9 @@ help:
 
 all: test release.native release.wasm
 
-test:
+test.dummy:
+	@cargo test --features=dummy_audio
+test.real:
 	@cargo test
 check:
 	@cargo rustc -- -Awarnings

@@ -85,33 +85,46 @@ impl AudioCore {
 //  //  //  //  //  //  //  //
 //      PRIVATE lvl0
 //  //  //  //  //  //  //  //
+
+// REAL
+#[cfg(not(feature="dummy_audio"))]
 impl AudioCore {
 
-//    fn refresh_tick_time(&self) {
-//        let mut locked_holder = self.render_holder.lock()
-//            .expect("panic on lockin holder_lock");
-//        locked_holder.tick_time = self.params.get_tick_time();
-//    }
-
     fn activate_device_loop(&mut self) -> Result< (), Box<dyn Error>> {
-        // prepare parameters
         let params = self.params.get_output_device_parameters();
         let render_holder_clone = self.render_holder.clone();
         let block_chunk = 2*self.params.block_size;
-        // try to start device loop
-        let device = invoke_run_output_device( params,
-                                             render_holder_clone,
-                                             block_chunk,
-                                             self.params.block_size );
-        // check result for errors
-        match device {
-            Err(e) => {
-                let errmsg = format!("{:?}",e);
-                log::error( &format!("AudioCore: {errmsg}") );
-                return Err(e)
-            },
-            Ok(running_device) => self.device = Some(running_device),
+        //
+        self.device = Some( invoke_run_output_device( 
+                                            params,
+                                            render_holder_clone,
+                                            block_chunk,
+                                            self.params.block_size )?
+            );
+        Ok(())
+    }
+}
+
+// DUMMY
+#[cfg(feature="dummy_audio")]
+impl AudioCore {
+
+    fn activate_device_loop(&mut self) -> Result< (), Box<dyn Error>> {
+        struct DummyAudio {
         }
+        impl DummyAudio {
+            fn new() -> Self {
+                log::creating("DummyAudio");
+                Self{}
+            }
+        }
+        impl BaseAudioOutputDevice for DummyAudio {}
+        impl Drop for DummyAudio {
+            fn drop(&mut self) {
+                log::droping("DummyAudio")
+            }
+        }
+        self.device = Some(Box::new( DummyAudio::new() ));
         Ok(())
     }
 }
@@ -147,24 +160,21 @@ fn invoke_run_output_device( params: OutputDeviceParameters,
 //          TESTS
 //  //  //  //  //  //  //  //
 #[cfg(test)]
-mod native_only {
+mod base_audio_core {
     use super::*;
 
     #[test]
-    #[ignore]
     fn create_inactive() {
         let audio = AudioCore::new();
         assert!(!audio.is_active());
     }
     #[test]
-    #[ignore]
     fn start_active() {
         let mut audio = AudioCore::new();
         let _ = audio.start();
         assert!(audio.is_active());
     }
     #[test]
-    #[ignore]
     fn start_stop() {
         let mut audio = AudioCore::new();
         let _ = audio.start();

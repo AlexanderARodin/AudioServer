@@ -14,3 +14,8 @@ tinyaudio = "0.1.1"
 rustysynth = "1.2.0"
 
 call_list = { path = "../call_list" }
+
+
+[features]
+dummy_audio=[]
+
