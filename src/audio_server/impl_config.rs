@@ -11,32 +11,23 @@ use super::AudioServer;
 
 impl AudioServer {
 
-    pub(crate) fn invoke_config_loading(&mut self, tbl: &Table, sf_array: &Vec<&'static [u8]> ) -> Result<(), Box<dyn Error>> {
+    pub(crate) fn invoke_core_config_loading(&mut self, tbl: &Table, sf_array: &Vec<&'static [u8]> ) -> Result<(), Box<dyn Error>> {
         self.sf_array = sf_array.clone();
         self.core_config = tbl.clone();
-        if let Some(Value::Array( exec_list )) = self.core_config.get( "autoexec" ) {
-            for exec in exec_list.clone() {
-                self.invoke_core_exec( &exec )?;
+        if let Some(exec_value) = self.core_config.get( "autoexec" ) {
+            let list = call_list::from_toml_value(exec_value)?;
+            for i in list {
+                match i {
+                    call_list::CallItem::Simple(cmd) => {
+                        println!(" --> : {}", cmd );
+                    },
+                    call_list::CallItem::WithParam(cmd, param ) => {
+                        println!(" --> : {}({})", cmd, param );
+                    },
+                }
             }
         }
         Ok(())
-    }
-
-
-    pub(crate) fn invoke_core_exec(&mut self, to_exec: &Value ) -> Result<(), Box<dyn Error>> {
-        match to_exec {
-            Value::String(cmd) => {
-                println!(" --> :{}", cmd);
-                return Ok(());
-            },
-            Value::Table(tbl) => {
-                println!(" --> :{}", tbl);
-                return Ok(());
-            },
-            _ => {
-                return Err( Box::from( "<invoke_core_exec>: unknown command") );
-            },
-        }
     }
 
 

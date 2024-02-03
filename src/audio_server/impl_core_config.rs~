@@ -1,0 +1,211 @@
+use std::error::Error;
+use toml::{ Table, Value };
+
+
+//  //  //  //  //  //  //  //
+//      core config impl
+//  //  //  //  //  //  //  //
+use super::AudioServer;
+
+#[allow(dead_code)]
+pub enum CallCmd {
+    Simple(String),
+    WithParam(String, String),
+}
+
+impl AudioServer {
+
+    pub(super) fn translate_to_call_list( value: &Value ) -> Result< Vec<CallCmd> , Box<dyn Error> > {
+        let mut list:Vec<CallCmd> = Vec::new();
+        Self::push_value( &mut list, value )?;
+        Ok( list )
+    }
+
+    fn push_value( list: &mut Vec<CallCmd>, value: &Value ) -> Result< (), Box<dyn Error> > {
+        match value {
+            Value::String(cmd) => {
+                Self::push_simple_command( list, cmd )?;
+            },
+            Value::Array(arr) => {
+                Self::push_command_array( list, arr )?;
+            },
+            Value::Table(tbl) => {
+                Self::push_command_table( list, tbl )?;
+            },
+            _ => {
+                return Err( Box::from( "<values_to_call_list>: unsupported command" ) );
+            },
+        }
+        Ok(())
+    }
+
+    fn push_command_array( list: &mut Vec<CallCmd>, arr: &Vec<Value> ) -> Result< (), Box<dyn Error> > {
+        for value in arr {
+            Self::push_value( list, value )?;
+        }
+        Ok(())
+    }
+    fn push_command_table( list: &mut Vec<CallCmd>, tbl: &Table ) -> Result< (), Box<dyn Error> > {
+        for (key, value) in tbl {
+            Self::push_key_value( list, key, value )?;
+        }
+        Ok(())
+    }
+    fn push_key_value( list: &mut Vec<CallCmd>, key: &str, value: &Value ) -> Result< (), Box<dyn Error> > {
+        match value {
+            Value::String(param) => {
+                list.push(
+                    CallCmd::WithParam( key.to_string(), param.to_string() )
+                );
+            },
+            _ => {
+                return Err( Box::from( "<push_key_value>: unsupported argument" ) );
+            },
+        }
+        Ok(())
+    }
+    fn push_simple_command( list: &mut Vec<CallCmd>, cmd: &str ) -> Result< (), Box<dyn Error> > {
+        list.push(
+                CallCmd::Simple(cmd.to_string())
+            );
+        Ok(())
+    }
+
+}
+
+
+
+//  //  //  //  //  //  //  //
+//      TESTs
+//  //  //  //  //  //  //  //
+#[cfg(test)]
+mod values_to_call_list {
+    use super::*;
+    use raalog::log;
+
+    #[test]
+    fn single_command_with_param() {
+        let tml = r#"
+                    cmds = { a = 'good', b = 'bad' }
+                    "#
+                    .parse::<Table>().unwrap();
+        let validator = vec![
+            "a(good)", 
+            "b(bad)",
+        ];
+        let mist;
+        let val = tml.get("cmds").unwrap();
+        match AudioServer::translate_to_call_list( val ) {
+            Err(e) => {
+                mist = "has NOT to be Error";
+                log::error(&e.to_string());
+            },
+            Ok(list) => {
+                check_call_list( list, validator );
+                mist = "";
+            },
+        }
+        assert!( mist == "", ">> {mist} <<");
+    }
+
+    #[test]
+    fn array_command() {
+        let tml = r#"
+                    cmds = [
+                        'test', 'another',
+                        ['alpha', 'betta'],
+                    ]
+                    "#
+                    .parse::<Table>().unwrap();
+        let validator = vec![
+            "test", "another","alpha","betta",
+        ];
+        let mist;
+        let val = tml.get("cmds").unwrap();
+        match AudioServer::translate_to_call_list( val ) {
+            Err(e) => {
+                mist = "has NOT to be Error";
+                log::error(&e.to_string());
+            },
+            Ok(list) => {
+                check_call_list( list, validator );
+                mist = "";
+            },
+        }
+        assert!( mist == "", ">> {mist} <<");
+    }
+
+    #[test]
+    fn single_command() {
+        let tml = r#"
+                    cmds = 'test'
+                    "#
+                    .parse::<Table>().unwrap();
+        let validator = vec![
+            "test",
+        ];
+        let mist;
+        let val = tml.get("cmds").unwrap();
+        match AudioServer::translate_to_call_list( val ) {
+            Err(e) => {
+                mist = "has NOT to be Error";
+                log::error(&e.to_string());
+            },
+            Ok(list) => {
+                check_call_list( list, validator );
+                mist = "";
+            },
+        }
+        assert!( mist == "", ">> {mist} <<");
+    }
+
+    #[test]
+    fn unsupported() {
+        let tml = r#"
+                    cmds = 3
+                    "#
+                    .parse::<Table>().unwrap();
+        let mist;
+        let val = tml.get("cmds").unwrap();
+        match AudioServer::translate_to_call_list( val ) {
+            Err(e) => {
+                mist = "";
+                log::error(&e.to_string());
+            },
+            _ => {
+                mist = "has to be Error";
+            },
+        }
+        assert!( mist == "", ">> {mist} <<");
+    }
+
+    //  //  //  //  //  //  //
+    fn check_call_list( list: Vec<CallCmd>, validator: Vec<&str> ) {
+        if list.len() != validator.len() {
+            println!("#> {} <--> {}", list.len(), validator.len() );
+            assert!(false, "element number incorrect");
+        }
+        let mut vali_index = 0;
+        for item in list {
+            match item {
+                CallCmd::Simple(cmd) => {
+                    let valid = validator[vali_index];
+                    println!("#> {} <--> {}", cmd, valid );
+                    if cmd != valid {
+                        assert!(false, "not valid command");
+                    }
+                },
+                CallCmd::WithParam(cmd, param ) => {
+                    let valid = validator[vali_index];
+                    let checked = format!( "{}({})", cmd, param );
+                    println!("#> {} <--> {}", checked, valid);
+                    if checked != valid {
+                        assert!(false, "not valid command");
+                    }
+                },
+            }
+            vali_index += 1;
+        }
+    }
+}
+

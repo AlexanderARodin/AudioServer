@@ -20,6 +20,7 @@ use raalog::log;
 //      CORE
 //  //  //  //  //  //  //  //
 mod impl_config;
+//mod impl_core_config;
 mod impl_config_sequence;
 mod impl_exec;
 
@@ -67,11 +68,11 @@ impl AudioServer {
     pub fn load_config( &mut self, setup: &Config  ) -> Result<(), Box<dyn Error>> {
         match setup {
             Config::CoreConfig( tbl, sf_array ) => {
-                self.invoke_config_loading( &tbl, sf_array )
+                self.invoke_core_config_loading( &tbl, sf_array )
             },
             Config::CoreConfigFromStr( txt, sf_array ) => {
                 let tbl = txt.parse::<Table>()?;
-                self.invoke_config_loading( &tbl, sf_array )
+                self.invoke_core_config_loading( &tbl, sf_array )
             },
         }
     }
