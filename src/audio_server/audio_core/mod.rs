@@ -1,6 +1,12 @@
 use std::error::Error;
 use std::sync::{Arc,Mutex};
 
+
+#[cfg(not(feature="real-audio"))]
+mod dummy_tinyaudio;
+#[cfg(not(feature="real-audio"))]
+use dummy_tinyaudio as tinyaudio;
+
 use tinyaudio::OutputDeviceParameters;
 use tinyaudio::prelude::BaseAudioOutputDevice;
 
@@ -87,13 +93,9 @@ impl AudioCore {
 //      PRIVATE lvl0
 //  //  //  //  //  //  //  //
 
-// REAL
-#[cfg(not(feature="dummy_audio"))]
 impl AudioCore {
 
     fn activate_device_loop(&mut self) -> Result< (), Box<dyn Error>> {
-        #[cfg(test)]
-        log::info(" --> activate REAL AUDIO");
         //
         let params = self.params.get_output_device_parameters();
         let render_holder_clone = self.render_holder.clone();
@@ -109,36 +111,10 @@ impl AudioCore {
     }
 }
 
-// DUMMY
-#[cfg(feature="dummy_audio")]
-impl AudioCore {
-
-    fn activate_device_loop(&mut self) -> Result< (), Box<dyn Error>> {
-        log::info(" --> activate DUMMY AUDIO");
-        struct DummyAudio {
-        }
-        impl DummyAudio {
-            fn new() -> Self {
-                log::creating("DummyAudio");
-                Self{}
-            }
-        }
-        impl BaseAudioOutputDevice for DummyAudio {}
-        impl Drop for DummyAudio {
-            fn drop(&mut self) {
-                log::droping("DummyAudio")
-            }
-        }
-        self.device = Some(Box::new( DummyAudio::new() ));
-        Ok(())
-    }
-}
 
 //  //  //  //  //  //  //  //
 //      PRIVATE lvl1
 //  //  //  //  //  //  //  //
-// REAL
-#[cfg(not(feature="dummy_audio"))]
 fn invoke_run_output_device( params: OutputDeviceParameters,
                            render_holder_clone: Arc<Mutex<RenderHolder>>,
                            block_chunk: usize,

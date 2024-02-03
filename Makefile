@@ -5,7 +5,7 @@ help:
 all: test release.native release.wasm
 
 test.dummy:
-	@cargo test --features=dummy_audio
+	@cargo test --no-default-features
 test.real:
 	@cargo test
 check:

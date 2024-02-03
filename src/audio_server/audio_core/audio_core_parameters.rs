@@ -1,4 +1,7 @@
-use tinyaudio::prelude::OutputDeviceParameters;
+#[cfg(not(feature="real-audio"))]
+use super::dummy_tinyaudio as tinyaudio;
+
+use tinyaudio::OutputDeviceParameters;
 
 use raalog::log;
 
