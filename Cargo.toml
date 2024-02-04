@@ -9,11 +9,11 @@ edition = "2021"
 [dependencies]
 tinyaudio = { version = "0.1.1", optional = true }
 rustysynth = "1.2.0"
+
 toml = "0.8.8"
 
 raalog = 	{ git = "https://github.com/AlexanderARodin/raalog.git", tag="v0.2.0" }
 call_list = 	{ git = "https://github.com/AlexanderARodin/call_list.git", branch="main" }
-
 
 
 
