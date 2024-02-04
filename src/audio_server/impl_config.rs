@@ -1,5 +1,5 @@
-use std::error::Error;
 use toml::{ Table, Value };
+use crate::prelude::*;
 
     use super::uni_source_variant::{ UniSourceVariant };
     use super::uni_source_variant::{ UniSourceVariant::* };
@@ -12,27 +12,14 @@ use super::AudioServer;
 
 impl AudioServer {
 
-    pub(crate) fn invoke_core_config_loading(&mut self, tbl: &Table, sf_array: &Vec<&'static [u8]> ) -> Result<(), Box<dyn Error>> {
+    pub(crate) fn invoke_core_config_loading(&mut self, tbl: &Table, sf_array: &Vec<&'static [u8]> ) -> ResultOf< () > {
         self.sf_array = sf_array.clone();
         self.core_config = tbl.clone();
-        if let Some(exec_value) = self.core_config.get( "autoexec" ) {
-            let list = call_list::from_toml_value(exec_value)?;
-            for i in list {
-                match i {
-                    call_list::CallItem::Simple(cmd) => {
-                        println!(" --> : {}", cmd );
-                    },
-                    call_list::CallItem::WithParam(cmd, param ) => {
-                        println!(" --> : {}({})", cmd, param );
-                    },
-                }
-            }
-        }
-        Ok(())
+        return Ok( self.invoke_core_exec( "autoexec" )? )
     }
 
 
-    pub(crate) fn invoke_config_parsing(&mut self, tbl: &Table, data: Option<&[u8]> ) -> Result<(), Box<dyn Error>> {
+    pub(crate) fn invoke_config_parsing(&mut self, tbl: &Table, data: Option<&[u8]> ) -> ResultOf< () > {
         if let Some(au_val) = tbl.get("AudioSource") {
             if let Value::Table(au_tbl) = au_val {
                 let sample_rate = self.audio_core.get_sample_rate();

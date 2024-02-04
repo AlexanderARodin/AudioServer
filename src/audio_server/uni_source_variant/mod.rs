@@ -1,7 +1,6 @@
-use std::error::Error;
-use std::sync::{Arc,Mutex};
 use toml::{ Table, Value };
 
+use crate::prelude::*;
 use raalog::log;
 
 
@@ -21,15 +20,15 @@ mod impl_new;
 pub(crate) enum UniSourceVariant {
     Silence,
     #[allow(dead_code)]
-    Audio( Arc<Mutex<dyn AudioRender>> ),
-    Simple( Arc<Mutex<SimpleSynth>> ),
-    Rusty( Arc<Mutex<RustySynthWrapper>> ),
-    Sequencer( Arc<Mutex<MidiSequencer>> ),
+    Audio( ArcMut<dyn AudioRender> ),
+    Simple( ArcMut<SimpleSynth> ),
+    Rusty( ArcMut<RustySynthWrapper> ),
+    Sequencer( ArcMut<MidiSequencer> ),
 }
 use UniSourceVariant::*;
 
 impl UniSourceVariant {
-    pub(crate) fn new( au_tbl: &Table, sample_rate: &usize, time_increment: f32, data: Option<&[u8]> ) -> Result<Self, Box<dyn Error>> {
+    pub(crate) fn new( au_tbl: &Table, sample_rate: &usize, time_increment: f32, data: Option<&[u8]> ) -> ResultOf<Self> {
         if let Some(name_val) = au_tbl.get("Name") {
             if let Value::String(name) = name_val {
                 match name.as_str() {
@@ -44,7 +43,7 @@ impl UniSourceVariant {
         }
     }
 
-    fn new_sequencer( au_tbl: &Table, sample_rate: &usize, time_increment: f32, data: Option<&[u8]> ) -> Result<Self, Box<dyn Error>> {
+    fn new_sequencer( au_tbl: &Table, sample_rate: &usize, time_increment: f32, data: Option<&[u8]> ) -> ResultOf<Self> {
         if let Some(au_seq_val) = au_tbl.get("Sequencer") {
             if let Value::Table(au_seq_tbl) = au_seq_val {
                 return Self::create_sequencer( au_seq_tbl, sample_rate, time_increment, data );
@@ -99,11 +98,11 @@ impl UniSourceVariant {
 //      internal
 //  //  //  //  //  //  //  //
 impl UniSourceVariant {
-    fn create_rustysynth(sample_rate: &usize, data: Option<&[u8]> ) -> Result< Arc<Mutex<RustySynthWrapper>>, Box<dyn Error> > {
+    fn create_rustysynth(sample_rate: &usize, data: Option<&[u8]> ) -> ResultOf< ArcMut<RustySynthWrapper> > {
         if let Some(mut sf_source) = data {
             match RustySynthWrapper::new( &sample_rate, &mut sf_source ) {
                 Ok(ryssyn) => {
-                    let arcmut_wrapper = Arc::new(Mutex::new( ryssyn ));
+                    let arcmut_wrapper = new_arcmut( ryssyn );
                     return Ok( arcmut_wrapper );
                 },
                 Err(e) => {

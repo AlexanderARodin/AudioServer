@@ -1,7 +1,7 @@
-use std::sync::{Arc,Mutex};
+//use std::sync::{Arc,Mutex};
 use raalog::log;
 
-
+use crate::prelude::*;
     use super::audio_core::AudioRender;
 
     use super::midi_lib::{MidiReceiver,MidiSequence,MidiMessage};
@@ -15,7 +15,7 @@ pub struct MidiSequencer{
     time_increment: f32,
     sequence: MidiSequence,
     is_auto_repeat: bool,
-    midi_synth: Option<Arc<Mutex<dyn MidiSynth>>>,
+    midi_synth: Option< ArcMut<dyn MidiSynth> >,
 }
 
 impl MidiSequencer {
@@ -43,7 +43,7 @@ impl MidiSequencer {
         self.is_auto_repeat = is_auto_repeat;
         self.sequence = seq;
     }
-    pub fn install_synth(&mut self, new_synth: Option<Arc<Mutex<dyn MidiSynth>>>) {
+    pub fn install_synth(&mut self, new_synth: Option< ArcMut<dyn MidiSynth> >) {
         self.midi_synth = new_synth;
     }
     pub fn send_to_synth(&mut self, midi: &MidiMessage) {

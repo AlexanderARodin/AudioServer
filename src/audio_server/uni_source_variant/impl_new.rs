@@ -1,7 +1,6 @@
-use std::error::Error;
-use std::sync::{Arc,Mutex};
 use toml::{ Table, Value };
 
+use crate::prelude::*;
     use super::super::synths::simple_synth::SimpleSynth;
     use super::super::midi_sequencer::MidiSequencer;
 
@@ -13,14 +12,14 @@ use super::UniSourceVariant;
 use UniSourceVariant::*;
 
 impl UniSourceVariant {
-    pub(crate) fn create_synth( source_name: &str, sample_rate: &usize, data: Option<&[u8]> ) -> Result<Self, Box<dyn Error>> {
+    pub(crate) fn create_synth( source_name: &str, sample_rate: &usize, data: Option<&[u8]> ) -> ResultOf<Self> {
         match source_name {
             "None" => {
                 return Ok( Silence );
             },
             "Simple" => {
                 let synth = SimpleSynth::new(sample_rate);
-                let arcmut_wrapper = Arc::new(Mutex::new(synth));
+                let arcmut_wrapper = new_arcmut(synth);
                 return Ok( Simple(arcmut_wrapper) );
             },
             "RustySynth" => {
@@ -32,7 +31,7 @@ impl UniSourceVariant {
             },
         }
     }
-    pub(crate) fn create_sequencer( au_seq_tbl: &Table, sample_rate: &usize, time_increment: f32, data: Option<&[u8]> ) -> Result<Self, Box<dyn Error>> {
+    pub(crate) fn create_sequencer( au_seq_tbl: &Table, sample_rate: &usize, time_increment: f32, data: Option<&[u8]> ) -> ResultOf<Self> {
         if let Some(main_val) = au_seq_tbl.get("MainVoice") {
             if let Value::String(name) = main_val {
                 let mut sequencer = MidiSequencer::new(time_increment);
@@ -47,7 +46,7 @@ impl UniSourceVariant {
                     _ => {
                     },
                 }
-                let sequencer_wrapper = Arc::new(Mutex::new( sequencer ));
+                let sequencer_wrapper = new_arcmut( sequencer );
                 return Ok( Sequencer(sequencer_wrapper) );
             }else{
                 return Err(Box::from("Name of MainVoice have to be text name of Synth"));

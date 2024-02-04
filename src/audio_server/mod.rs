@@ -1,7 +1,7 @@
 #[allow(non_snake_case)]
-use std::error::Error;
 use toml::Table;
 use raalog::log;
+use crate::prelude::*;
 
     mod audio_core;
     use audio_core::AudioCore;
@@ -15,7 +15,7 @@ use raalog::log;
     mod synths;
     mod midi_sequencer;
 
-//type Result<T> = core::result::Result<T, Error>;
+
 
 //  //  //  //  //  //  //  //
 //      CORE
@@ -24,6 +24,8 @@ mod impl_config;
 //mod impl_core_config;
 mod impl_config_sequence;
 mod impl_exec;
+
+mod impl_core_exec;
 
 //  //  //  //  //  //  //  //
 pub enum Config<'a> {
@@ -66,7 +68,7 @@ impl Drop for AudioServer {
 impl AudioServer {
 
     //  //  //  //  //  //  //
-    pub fn load_config( &mut self, setup: &Config  ) -> Result<(), Box<dyn Error>> {
+    pub fn load_config( &mut self, setup: &Config  ) -> ResultOf<()> {
         match setup {
             Config::CoreConfig( tbl, sf_array ) => {
                 self.invoke_core_config_loading( &tbl, sf_array )
@@ -79,13 +81,13 @@ impl AudioServer {
     }
 
     //  //  //  //  //  //  //
-    pub fn config( &mut self, setup: &str, data: Option<&[u8]>  ) -> Result<(), Box<dyn Error>> {
+    pub fn config( &mut self, setup: &str, data: Option<&[u8]>  ) -> ResultOf<()> {
         let tbl = setup.parse::<Table>()?;
         self.invoke_config_parsing( &tbl, data )
     }
 
     //  //  //  //  //  //  //
-    pub fn exec( &mut self, commands: &str) -> Result<(), Box<dyn Error>> {
+    pub fn exec( &mut self, commands: &str) -> ResultOf<()> {
         match commands {
             "stop" => {
                 self.audio_core.stop();

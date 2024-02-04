@@ -1,9 +1,8 @@
-use std::error::Error;
 use raalog::log;
+use crate::prelude::*;
 
     use super::midi_lib::{ MidiMessage, MidiSequence };
     use super::uni_source_variant::UniSourceVariant::Sequencer;
-
 
 
 //  //  //  //  //  //  //  //
@@ -12,7 +11,7 @@ use raalog::log;
 use super::AudioServer;
 
 impl AudioServer {
-    pub(crate) fn invoke_exec_parsing(&mut self, commands: &str) -> Result<(), Box<dyn Error>> {
+    pub(crate) fn invoke_exec_parsing(&mut self, commands: &str) -> ResultOf<()> {
         match commands {
             "play loop" => {
                 if let Some(seq_orig) = &self.midi_sequence {
