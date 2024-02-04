@@ -15,6 +15,7 @@ use raalog::log;
     mod synths;
     mod midi_sequencer;
 
+//type Result<T> = core::result::Result<T, Error>;
 
 //  //  //  //  //  //  //  //
 //      CORE
