@@ -1,4 +1,3 @@
-//use std::sync::{Arc,Mutex};
 use raalog::log;
 
 use crate::prelude::*;
@@ -22,7 +21,7 @@ impl MidiSequencer {
     pub fn new( time_increment: f32 ) -> Self {
         log::creating("MidiSequencer");
         Self{
-            time_increment: time_increment,
+            time_increment,
             sequence: MidiSequence::new(),
             is_auto_repeat: false,
             midi_synth: None,
@@ -39,6 +38,7 @@ impl Drop for MidiSequencer {
 //      interface
 //  //  //  //  //  //  //  //
 impl MidiSequencer {
+
     pub fn set_midi_sequence(&mut self, seq: MidiSequence, is_auto_repeat: bool) {
         self.is_auto_repeat = is_auto_repeat;
         self.sequence = seq;
@@ -65,9 +65,8 @@ impl MidiSequencer {
 //      RENDER interface
 //  //  //  //  //  //  //  //
 impl AudioRender for MidiSequencer {
-    fn render(&mut self, left: &mut [f32], right: &mut [f32]) {
-        //log::tick();
 
+    fn render(&mut self, left: &mut [f32], right: &mut [f32]) {
         match &self.midi_synth {
             None => {
                 fill_silence(left);

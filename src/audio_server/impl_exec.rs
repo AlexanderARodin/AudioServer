@@ -18,7 +18,8 @@ impl AudioServer {
                     self.set_sequence( seq_orig.clone(), true);
                     return Ok(());
                 }else{
-                    return Err( Box::from("there is no loaded sequence for play") );
+                    let msg = format!( "<AudioServer.invoke_exec_parsing>({commands}): there is no loaded sequence for play" );
+                    return Err( Box::from( msg.as_str() ) );
                 }
             },
             "play once" => {
@@ -26,7 +27,8 @@ impl AudioServer {
                     self.set_sequence( seq_orig.clone(), false);
                     return Ok(());
                 }else{
-                    return Err( Box::from("there is no loaded sequence for play") );
+                    let msg = format!( "<AudioServer.invoke_exec_parsing>({commands}): there is no loaded sequence for play" );
+                    return Err( Box::from( msg.as_str() ) );
                 }
             },
             _ => {

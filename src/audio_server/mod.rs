@@ -22,7 +22,7 @@ use crate::prelude::*;
 //  //  //  //  //  //  //  //
 mod impl_config;
 //mod impl_core_config;
-mod impl_config_sequence;
+//mod impl_config_sequence;
 mod impl_exec;
 
 mod impl_core_exec;
@@ -55,7 +55,7 @@ impl AudioServer {
 }
 impl Drop for AudioServer {
     fn drop(&mut self) {
-        let _ = self.exec("stop");
+        //let _ = self.exec("stop");
         self.audio_core.stop();
         log::droping("AudioServer");
     }
@@ -79,12 +79,13 @@ impl AudioServer {
             },
         }
     }
-
+/*
     //  //  //  //  //  //  //
     pub fn config( &mut self, setup: &str, data: Option<&[u8]>  ) -> ResultOf<()> {
         let tbl = setup.parse::<Table>()?;
         self.invoke_config_parsing( &tbl, data )
     }
+    */
 
     //  //  //  //  //  //  //
     pub fn exec( &mut self, commands: &str) -> ResultOf<()> {

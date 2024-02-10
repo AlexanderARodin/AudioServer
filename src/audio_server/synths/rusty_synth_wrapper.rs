@@ -17,25 +17,11 @@ pub struct RustySynthWrapper{
     synth: Synthesizer,
 }
 impl RustySynthWrapper {
-    pub fn new( sample_rate: &usize, mut sound_font_source: &[u8] ) -> Result<Self, SynthesizerError> {
+    pub fn new( sample_rate: &usize, mut sound_font_source: &[u8] ) -> Result< Self, Box<dyn std::error::Error> > {
         let init_params = SynthesizerSettings::new( *sample_rate as i32 );
-        let snd_fnt = Arc::new( SoundFont::new(&mut sound_font_source).expect("loading SF error... need to proceccing") );
-        let new_synth = Synthesizer::new(&snd_fnt, &init_params);
-        match new_synth {
-            Err(e) => {
-                let errmsg = err_to_string( &e );
-                log::error( &format!("RustySynthWrapper: {errmsg}") );
-                Err(e)
-                },
-            Ok(loaded_synth) => {
-                log::creating("RustySynthWrapper");
-                Ok(
-                    Self{
-                        synth: loaded_synth
-                    }
-                )
-            }
-        }
+        let arc_snd_fnt = Arc::new( SoundFont::new( &mut sound_font_source )? );
+        let new_synth = Synthesizer::new(&arc_snd_fnt, &init_params)?;
+        Ok( Self{synth: new_synth} )
     }
 }
 impl Drop for RustySynthWrapper {
@@ -50,7 +36,6 @@ impl Drop for RustySynthWrapper {
 //  //  //  //  //  //  //  //
 impl AudioRender for RustySynthWrapper {
     fn render(&mut self, left: &mut [f32], right: &mut [f32]) {
-        //log::tick();
         self.synth.render(&mut left[..], &mut right[..]);
     }
 }
@@ -79,22 +64,3 @@ impl MidiSynth for RustySynthWrapper {
     }
 }
 
-//  //  //  //  //  //  //  //
-//      Err
-//  //  //  //  //  //  //  //
-fn err_to_string( e: &SynthesizerError ) -> String {
-    match e {
-        SynthesizerError::SampleRateOutOfRange(sample_rate) => {
-            return format!("SynthesizerError.SampleRateOutOfRange: <{}>", sample_rate);
-        },
-        SynthesizerError::BlockSizeOutOfRange(size) => {
-            return format!("SynthesizerError.BlockSizeOutOfRange: <{}>", size);
-        },
-        SynthesizerError::MaximumPolyphonyOutOfRange(size) => {
-            return format!("SynthesizerError.MaximumPolyphonyOutOfRange: <{}>", size);
-        },
-        _ => {
-            return format!("SynthesizerError.<unknown>");
-        },
-    }
-}
