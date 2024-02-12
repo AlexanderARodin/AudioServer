@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
     use super::uni_source_variant::{ UniSourceVariant };
-//    use super::uni_source_variant::{ UniSourceVariant::* };
+    use super::uni_source_variant::{ UniSourceVariant::* };
 
 
 //  //  //  //  //  //  //  //
@@ -11,7 +11,7 @@ use super::AudioServer;
 
 impl AudioServer {
 
-    pub(crate) fn invoke_core_exec(&mut self, script_name: &str ) -> ResultOf< () > {
+    pub(super) fn invoke_exec_core(&mut self, script_name: &str ) -> ResultOf< () > {
         let path = format!( "workflows.{script_name}" );
         let exec_list = call_list::from_toml_table( &self.core_config, &path )?;
         for exec_item in exec_list {
@@ -19,7 +19,8 @@ impl AudioServer {
         }
         Ok(())
     }
-    pub(crate) fn process_core_exec_item(&mut self, exec_item: &call_list::CallItem ) -> ResultOf< () > {
+
+    fn process_core_exec_item(&mut self, exec_item: &call_list::CallItem ) -> ResultOf< () > {
         match exec_item {
             call_list::CallItem::Simple( s ) => {
                 return self.exec_core_simple( s );
@@ -30,14 +31,6 @@ impl AudioServer {
         }
     }
 }
-/*
-fn get_sub_table( item: &call_list::CallItem ) -> String {
-    match item {
-        call_list::CallItem::Simple( s ) => s.to_string(),
-        call_list::CallItem::WithNested( key, sub_item ) => format!("{}({})",key, get_sub_table(sub_item) ),
-    }
-}
-*/
 
 impl AudioServer {
 
@@ -76,6 +69,26 @@ impl AudioServer {
         }
     }
 
+    //  //  //  //  //  //  //
+    fn install_source_to_audio(&mut self) {
+        match &self.uni_source {
+            Silence => {
+                self.audio_core.install_render(None);
+            },
+            Audio(wrapped_audio_render) => {
+                self.audio_core.install_render(Some( wrapped_audio_render.clone() ));
+            },
+            Simple(simsyn) => {
+                self.audio_core.install_render(Some( simsyn.clone() ));
+            },
+            Rusty(ryssyn) => {
+                self.audio_core.install_render(Some( ryssyn.clone() ));
+            },
+            Sequencer(sequencer) => {
+                self.audio_core.install_render(Some( sequencer.clone() ));
+            },
+        }
+    }
 }
 
 

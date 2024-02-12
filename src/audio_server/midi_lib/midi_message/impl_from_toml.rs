@@ -28,6 +28,9 @@ impl MidiMessage {
             Value::Array(arr) => {
                 return Self::from(arr);
             },
+            Value::Table(_) => {
+                return Err( Box::from("<MidiMessage::from>: table not supported yet") );
+            },
             _ => {
                 return Err( Box::from("<MidiMessage::from>: argument is not an array") );
             },

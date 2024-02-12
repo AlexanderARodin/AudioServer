@@ -11,7 +11,7 @@ use crate::prelude::*;
 use super::AudioServer;
 
 impl AudioServer {
-    pub(crate) fn invoke_exec_parsing(&mut self, commands: &str) -> ResultOf<()> {
+    pub(super) fn invoke_debug_midi_parsing(&mut self, commands: &str) -> ResultOf<()> {
         match commands {
             "play loop" => {
                 if let Some(seq_orig) = &self.midi_sequence {
@@ -44,6 +44,7 @@ impl AudioServer {
 //      internal
 //  //  //  //  //  //  //  //
 impl AudioServer {
+
     fn set_sequence(&mut self, seq: MidiSequence, is_auto_repeat: bool ) {
         match &self.uni_source {
             Sequencer(sequencer) => {

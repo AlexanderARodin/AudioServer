@@ -4,7 +4,7 @@ use super::{MidiMessage,MidiReceiver};
 //  //  //  //  //  //  //  //
 //      CORE: MidiSequence
 //  //  //  //  //  //  //  //
-//mod impl_sequence_from_toml;
+mod impl_sequence_from_toml;
 
 #[derive(Clone)]
 pub struct MidiSequence {
