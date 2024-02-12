@@ -1,9 +1,8 @@
-use std::error::Error;
 use raalog::log;
+use crate::prelude::*;
 
     use super::midi_lib::{ MidiMessage, MidiSequence };
     use super::uni_source_variant::UniSourceVariant::Sequencer;
-
 
 
 //  //  //  //  //  //  //  //
@@ -12,14 +11,15 @@ use raalog::log;
 use super::AudioServer;
 
 impl AudioServer {
-    pub(crate) fn invoke_exec_parsing(&mut self, commands: &str) -> Result<(), Box<dyn Error>> {
+    pub(super) fn invoke_debug_midi_parsing(&mut self, commands: &str) -> ResultOf<()> {
         match commands {
             "play loop" => {
                 if let Some(seq_orig) = &self.midi_sequence {
                     self.set_sequence( seq_orig.clone(), true);
                     return Ok(());
                 }else{
-                    return Err( Box::from("there is no loaded sequence for play") );
+                    let msg = format!( "<AudioServer.invoke_exec_parsing>({commands}): there is no loaded sequence for play" );
+                    return Err( Box::from( msg.as_str() ) );
                 }
             },
             "play once" => {
@@ -27,7 +27,8 @@ impl AudioServer {
                     self.set_sequence( seq_orig.clone(), false);
                     return Ok(());
                 }else{
-                    return Err( Box::from("there is no loaded sequence for play") );
+                    let msg = format!( "<AudioServer.invoke_exec_parsing>({commands}): there is no loaded sequence for play" );
+                    return Err( Box::from( msg.as_str() ) );
                 }
             },
             _ => {
@@ -43,6 +44,7 @@ impl AudioServer {
 //      internal
 //  //  //  //  //  //  //  //
 impl AudioServer {
+
     fn set_sequence(&mut self, seq: MidiSequence, is_auto_repeat: bool ) {
         match &self.uni_source {
             Sequencer(sequencer) => {
