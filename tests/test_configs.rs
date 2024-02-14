@@ -21,6 +21,8 @@ fn ordinary_basic() -> ResultOf< () > {
         [workflows]
         seq-A = [
             { load = 'seq-1.notes' },
+            {  transpose = { 4 = { load = 'seq-1.notes' } } },
+            {  speed = { 4 = { load = 'seq-1.notes' } } },
             'play',
         ]
         [seq-1]
