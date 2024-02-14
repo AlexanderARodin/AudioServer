@@ -11,7 +11,7 @@ use super::MidiSequence;
 
 impl MidiSequence {
 
-    pub fn from_toml_array( tml_array: &Array, transpose: i32, speed: f32 ) -> ResultOf< Self > {
+    pub fn from_toml_array( tml_array: &Array, transpose: &i32, speed: &f32 ) -> ResultOf< Self > {
         let mut seq = Self::new();
         let mut time_offset = 0_f32;
 
@@ -36,7 +36,6 @@ impl MidiSequence {
                 },
             }
         }
-
         return Ok( seq );
     }
 }

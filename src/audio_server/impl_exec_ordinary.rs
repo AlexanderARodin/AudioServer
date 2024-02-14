@@ -24,7 +24,9 @@ impl AudioServer {
                 return self.exec_ordinary_simple( s );
             },
             call_list::CallItem::WithNested( key, nested_item ) => {
-                return self.exec_ordinary_withparam( key, nested_item );
+                let transpose = 0;
+                let speed = 1_f32;
+                return self.exec_ordinary_withparam( key, nested_item, &transpose, &speed );
             },
         }
     }
@@ -58,14 +60,16 @@ impl AudioServer {
         }
     }
 
-    fn exec_ordinary_withparam(&mut self, key: &str, nested_item: &call_list::CallItem ) -> ResultOf<()> {
+    fn exec_ordinary_withparam(&mut self, key: &str, nested_item: &call_list::CallItem, transpose: &i32, speed: &f32 ) -> ResultOf<()> {
         match (key, nested_item) {
             ("load", call_list::CallItem::Simple(s)) => {
-                return self.load_sequence_from( s );
+                return self.load_sequence_from( s, &transpose, &speed );
             },
-            ("load", _ ) => {
-                let msg = format!( "<AudioServer.exec_ordinary_withparam>: <{key}> must be with path information" );
-                return Err( Box::from( msg.as_str() ) );
+            ("transpose", call_list::CallItem::WithNested( subkey, subitem )) => {
+                return self.parse_transpose(subkey, subitem, &speed );
+            },
+            ("speed", call_list::CallItem::WithNested( subkey, subitem )) => {
+                return self.parse_speed(subkey, subitem, &transpose);
             },
             _ => {
                 let msg = format!( "<AudioServer.exec_ordinary_withparam>: unknown key <{key}>" );
@@ -73,21 +77,45 @@ impl AudioServer {
             },
         }
     }
+
+    fn parse_speed(&mut self, key: &str, nested_item: &call_list::CallItem, transpose: &i32 ) -> ResultOf<()> {
+        let speed = key.parse::<f32>()?;
+        match nested_item {
+            call_list::CallItem::WithNested( subkey, subitem ) => {
+                return self.exec_ordinary_withparam( subkey, subitem, transpose, &speed)
+            },
+            _ => {
+                let msg = format!( "<AudioServer.parse_transpose>: unknown " );
+                return Err( Box::from( msg.as_str() ) );
+            },
+        }
+    }
+    fn parse_transpose(&mut self, key: &str, nested_item: &call_list::CallItem, speed: &f32 ) -> ResultOf<()> {
+        let transpose = key.parse::<i32>()?;
+        match nested_item {
+            call_list::CallItem::WithNested( subkey, subitem ) => {
+                return self.exec_ordinary_withparam( subkey, subitem, &transpose, speed)
+            },
+            _ => {
+                let msg = format!( "<AudioServer.parse_transpose>: unknown " );
+                return Err( Box::from( msg.as_str() ) );
+            },
+        }
+    }
+
 }
 
 //  //  //  //  //  //  //  //
 impl AudioServer {
 
-    fn load_sequence_from(&mut self, path: &str) -> ResultOf< () > {
+    fn load_sequence_from(&mut self, path: &str, transpose: &i32, speed: &f32 ) -> ResultOf< () > {
         match call_list::get_value_by_path(&self.ordinary_config, path) {
             None => {
                 let msg = format!( "<AudioServer.load_sequence_from>: invalid path <{path}>" );
                 return Err( Box::from( msg.as_str() ) );
             },
             Some( toml::Value::Array( arr ) ) => {
-                let transpose = 0;
-                let speed = 1.;
-                self.midi_sequence = Some( MidiSequence::from_toml_array(arr, transpose, speed)? );
+                self.midi_sequence = Some( MidiSequence::from_toml_array(arr, &transpose, &speed)? );
                 return Ok(());
             },
             Some(_) => {
